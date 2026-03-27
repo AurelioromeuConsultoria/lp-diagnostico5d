@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnóstico 5D — Governo Interior & Prosperidade | Sandro Lopez</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300;1,9..144,600&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --cream:       #F7F4EE;
+      --cream-dark:  #EDE9E0;
+      --dark:        #0E0C09;
+      --dark-2:      #18150F;
+      --dark-3:      #231E17;
+      --gold:        #B5771A;
+      --gold-light:  #D4A848;
+      --gold-pale:   #F0DEB4;
+      --text:        #1A1511;
+      --text-2:      #5C5650;
+      --text-3:      #8C8580;
+      --white:       #FFFFFF;
+      --border:      rgba(26,21,17,0.1);
+      --border-dark: rgba(255,255,255,0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 400;
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+
+    em { font-style: italic; color: var(--gold); }
+
+    /* ── UTILITIES ── */
+    .overline {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .container    { max-width: 1100px; margin: 0 auto; padding: 0 36px; }
+    .container-sm { max-width:  700px; margin: 0 auto; padding: 0 36px; }
+
+    section { padding: 104px 0; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 16px 36px;
+      border-radius: 4px;
+      transition: all 0.25s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-dark {
+      background: var(--dark);
+      color: var(--cream);
+    }
+    .btn-dark:hover {
+      background: #2A2419;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 36px rgba(14,12,9,0.22);
+    }
+    .btn-gold {
+      background: var(--gold);
+      color: var(--white);
+    }
+    .btn-gold:hover {
+      background: #9E6515;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 36px rgba(181,119,26,0.32);
+    }
+    .btn-lg { padding: 20px 52px; font-size: 0.88rem; }
+    .btn-block { display: block; text-align: center; width: 100%; }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+      padding: 22px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.3s ease;
+    }
+    .navbar.scrolled {
+      background: rgba(247,244,238,0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 14px 36px;
+      box-shadow: 0 1px 0 var(--border);
+    }
+    .navbar-logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.05rem;
+      font-weight: 300;
+      color: var(--dark);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .navbar-logo span { color: var(--gold); }
+    .navbar-link {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--dark);
+      padding: 10px 22px;
+      border: 1.5px solid rgba(26,21,17,0.2);
+      border-radius: 4px;
+      transition: all 0.25s ease;
+    }
+    .navbar-link:hover { background: var(--dark); color: var(--cream); border-color: var(--dark); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 36px 80px;
+      position: relative;
+      overflow: hidden;
+      background: var(--cream);
+    }
+    .hero-glow {
+      position: absolute;
+      top: -10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(181,119,26,0.07) 0%, transparent 68%);
+      pointer-events: none;
+    }
+    .hero-grain {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 20px;
+      background: var(--dark);
+      color: var(--gold-pale);
+      border-radius: 100px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 44px;
+      position: relative;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.2s forwards;
+    }
+    .hero-badge::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      background: var(--gold);
+      border-radius: 50%;
+    }
+    .hero h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(3rem, 7.5vw, 6.8rem);
+      font-weight: 300;
+      line-height: 1.02;
+      letter-spacing: -0.035em;
+      max-width: 860px;
+      margin-bottom: 30px;
+      position: relative;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.4s forwards;
+    }
+    .hero-sub {
+      font-size: 1.05rem;
+      color: var(--text-2);
+      max-width: 480px;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      position: relative;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.6s forwards;
+    }
+    .hero-detail {
+      font-size: 0.78rem;
+      color: var(--text-3);
+      letter-spacing: 0.04em;
+      margin-bottom: 52px;
+      position: relative;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.72s forwards;
+    }
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.85s forwards;
+    }
+    .hero-note {
+      font-size: 0.78rem;
+      color: var(--text-3);
+      letter-spacing: 0.04em;
+    }
+    .hero-scroll {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 1.3s forwards;
+    }
+    .hero-scroll-line {
+      width: 1px;
+      height: 44px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: pulse-line 2.2s ease-in-out infinite;
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar { background: var(--dark); padding: 0; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .stat-item {
+      padding: 44px 40px;
+      text-align: center;
+      border-right: 1px solid var(--border-dark);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Fraunces', serif;
+      font-size: 3.6rem;
+      font-weight: 300;
+      color: var(--gold-light);
+      line-height: 1;
+      letter-spacing: -0.03em;
+      display: block;
+      margin-bottom: 10px;
+    }
+    .stat-label {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.42);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── PROBLEMA ── */
+    .problema { background: var(--cream); }
+    .problema-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 88px;
+      align-items: center;
+    }
+    .problema-left .overline { display: block; color: var(--gold); margin-bottom: 22px; }
+    .problema-left h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 300;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      margin-bottom: 36px;
+    }
+    .body-text { font-size: 0.95rem; color: var(--text-2); }
+    .body-text p { margin-bottom: 18px; }
+    .body-text p:last-child { margin-bottom: 0; }
+    .body-text strong { color: var(--text); font-weight: 600; }
+
+    .quote-block {
+      background: var(--dark);
+      border-radius: 14px;
+      padding: 44px;
+      position: relative;
+      overflow: hidden;
+    }
+    .quote-block::before {
+      content: '\201C';
+      font-family: 'Fraunces', serif;
+      font-size: 9rem;
+      color: var(--gold);
+      opacity: 0.18;
+      line-height: 0.75;
+      display: block;
+      margin-bottom: 12px;
+    }
+    .quote-block p {
+      font-family: 'Fraunces', serif;
+      font-size: 1.3rem;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1.5;
+    }
+    .quote-block-orb {
+      position: absolute;
+      bottom: -40px;
+      right: -40px;
+      width: 120px;
+      height: 120px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0.08;
+    }
+
+    /* ── O QUE É ── */
+    .o-que-e { background: var(--dark-2); }
+    .o-que-e-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .o-que-e-left .overline { display: block; color: var(--gold-light); margin-bottom: 22px; }
+    .o-que-e-left h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 300;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      color: var(--white);
+      margin-bottom: 32px;
+    }
+    .o-que-e-left h2 em { color: var(--gold-light); }
+    .o-que-e-left p { font-size: 0.95rem; color: rgba(255,255,255,0.58); margin-bottom: 18px; }
+    .o-que-e-left p:last-child { margin-bottom: 0; }
+    .o-que-e-left p strong { color: var(--white); font-weight: 500; }
+
+    /* 5D Geometric Visual */
+    .cinco-d-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cinco-d-svg-wrap {
+      position: relative;
+      width: 280px;
+      height: 280px;
+    }
+    .cinco-d-svg-wrap svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── 5 DIMENSÕES ── */
+    .dimensoes { background: var(--cream-dark); }
+    .dimensoes-header { text-align: center; margin-bottom: 60px; }
+    .dimensoes-header .overline { display: block; color: var(--gold); margin-bottom: 20px; }
+    .dimensoes-header h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+    }
+    .dim-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--border);
+      gap: 1px;
+    }
+    .dim-card {
+      background: var(--white);
+      padding: 32px 22px;
+      transition: background 0.3s ease;
+    }
+    .dim-card:hover { background: var(--cream); }
+    .dim-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      color: var(--gold);
+      display: block;
+      margin-bottom: 18px;
+    }
+    .dim-tag {
+      display: inline-block;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #2D6A4F;
+      background: rgba(45,106,79,0.1);
+      padding: 3px 10px;
+      border-radius: 100px;
+      margin-bottom: 14px;
+    }
+    .dim-title {
+      font-family: 'Fraunces', serif;
+      font-size: 1.08rem;
+      font-weight: 300;
+      color: var(--dark);
+      line-height: 1.3;
+      margin-bottom: 12px;
+    }
+    .dim-desc {
+      font-size: 0.8rem;
+      color: var(--text-2);
+      line-height: 1.72;
+    }
+
+    /* ── VERSÍCULO ── */
+    .versiculo {
+      background: var(--gold);
+      padding: 84px 36px;
+      text-align: center;
+    }
+    .versiculo blockquote {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(1.35rem, 3vw, 2.1rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--dark);
+      max-width: 660px;
+      margin: 0 auto 20px;
+      line-height: 1.5;
+    }
+    .versiculo cite {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: rgba(14,12,9,0.55);
+      text-transform: uppercase;
+    }
+
+    /* ── COMO FUNCIONA ── */
+    .como-funciona { background: var(--dark); }
+    .como-funciona-header { text-align: center; margin-bottom: 72px; }
+    .como-funciona-header .overline { display: block; color: var(--gold-light); margin-bottom: 20px; }
+    .como-funciona-header h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+      color: var(--white);
+    }
+    .como-funciona-header h2 em { color: var(--gold-light); }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      position: relative;
+    }
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 27px;
+      left: calc(12.5% + 2px);
+      right: calc(12.5% + 2px);
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(181,119,26,0.35), rgba(181,119,26,0.35), transparent);
+    }
+    .step { padding: 0 28px; text-align: center; }
+    .step-circle {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: 1px solid rgba(181,119,26,0.28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 28px;
+      position: relative;
+      z-index: 1;
+      background: var(--dark);
+    }
+    .step-n {
+      font-family: 'Fraunces', serif;
+      font-size: 1.15rem;
+      font-weight: 300;
+      color: var(--gold-light);
+    }
+    .step-title {
+      font-family: 'Fraunces', serif;
+      font-size: 1.15rem;
+      font-weight: 300;
+      color: var(--white);
+      margin-bottom: 12px;
+    }
+    .step-desc {
+      font-size: 0.83rem;
+      color: rgba(255,255,255,0.46);
+      line-height: 1.72;
+    }
+
+    /* ── ENTREGA ── */
+    .entrega { background: var(--cream-dark); }
+    .entrega-header { margin-bottom: 56px; }
+    .entrega-header .overline { display: block; color: var(--gold); margin-bottom: 20px; }
+    .entrega-header h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+    }
+    .entrega-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .entrega-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 36px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .entrega-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 48px rgba(14,12,9,0.08);
+    }
+    .entrega-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--dark);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+    }
+    .entrega-title {
+      font-family: 'Fraunces', serif;
+      font-size: 1.18rem;
+      font-weight: 300;
+      color: var(--dark);
+      margin-bottom: 10px;
+    }
+    .entrega-desc { font-size: 0.86rem; color: var(--text-2); line-height: 1.72; }
+
+    /* ── PARA QUEM ── */
+    .para-quem { background: var(--cream); }
+    .para-quem-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 88px;
+      align-items: start;
+    }
+    .para-quem-left .overline { display: block; color: var(--gold); margin-bottom: 22px; }
+    .para-quem-left h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+      margin-bottom: 20px;
+    }
+    .para-quem-left p { font-size: 0.95rem; color: var(--text-2); }
+
+    .checks { display: flex; flex-direction: column; }
+    .check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .check-row:first-child { border-top: 1px solid var(--border); }
+    .check-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--dark);
+      flex-shrink: 0;
+      margin-top: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .check-dot svg { width: 10px; height: 10px; stroke: var(--gold-light); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .check-text { font-size: 0.92rem; color: var(--text); line-height: 1.62; }
+
+    /* ── DEPOIMENTOS ── */
+    .prova { background: var(--dark); }
+    .prova-header { text-align: center; margin-bottom: 64px; }
+    .prova-header .overline { display: block; color: var(--gold-light); margin-bottom: 20px; }
+    .prova-header h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+      color: var(--white);
+    }
+    .prova-header h2 em { color: var(--gold-light); }
+    .depo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .depo-card {
+      background: var(--dark-3);
+      border-radius: 12px;
+      padding: 36px;
+    }
+    .depo-stars { display: flex; gap: 4px; margin-bottom: 20px; }
+    .star { color: var(--gold); font-size: 0.78rem; }
+    .depo-text {
+      font-family: 'Fraunces', serif;
+      font-size: 1.05rem;
+      font-style: italic;
+      font-weight: 300;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.65;
+      margin-bottom: 24px;
+    }
+    .depo-author {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+    }
+
+    /* ── PREÇO ── */
+    .preco-section { background: var(--cream); text-align: center; }
+    .preco-header .overline { display: block; color: var(--gold); margin-bottom: 20px; }
+    .preco-header h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+      margin-bottom: 60px;
+    }
+    .preco-card {
+      max-width: 540px;
+      margin: 0 auto;
+      background: var(--dark);
+      border-radius: 20px;
+      padding: 56px 48px;
+      color: var(--white);
+      position: relative;
+      overflow: hidden;
+    }
+    .preco-card-glow {
+      position: absolute;
+      top: -80px; left: -80px;
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(181,119,26,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .preco-badge {
+      display: inline-block;
+      background: var(--gold);
+      color: var(--dark);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 6px 18px;
+      border-radius: 100px;
+      margin-bottom: 32px;
+      position: relative;
+    }
+    .preco-de {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.36);
+      text-decoration: line-through;
+      margin-bottom: 6px;
+      position: relative;
+    }
+    .preco-valor {
+      font-family: 'Fraunces', serif;
+      font-size: 5.2rem;
+      font-weight: 300;
+      color: var(--gold-light);
+      line-height: 1;
+      letter-spacing: -0.04em;
+      margin-bottom: 8px;
+      position: relative;
+    }
+    .preco-label {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.36);
+      letter-spacing: 0.06em;
+      margin-bottom: 40px;
+      position: relative;
+    }
+    .preco-hr {
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+      margin-bottom: 32px;
+      position: relative;
+    }
+    .preco-itens {
+      list-style: none;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 40px;
+      position: relative;
+    }
+    .preco-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.72);
+    }
+    .preco-dot {
+      width: 5px; height: 5px;
+      background: var(--gold);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .preco-btn {
+      display: block;
+      background: var(--gold);
+      color: var(--dark);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 18px;
+      border-radius: 8px;
+      transition: all 0.25s ease;
+      text-align: center;
+      width: 100%;
+      position: relative;
+    }
+    .preco-btn:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 36px rgba(181,119,26,0.3);
+    }
+    .preco-garantia {
+      font-size: 0.73rem;
+      color: rgba(255,255,255,0.3);
+      margin-top: 20px;
+      line-height: 1.65;
+      position: relative;
+    }
+
+    /* ── FAQ ── */
+    .faq { background: var(--cream-dark); }
+    .faq-header { text-align: center; margin-bottom: 64px; }
+    .faq-header .overline { display: block; color: var(--gold); margin-bottom: 20px; }
+    .faq-header h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+    }
+    .faq-list { max-width: 680px; margin: 0 auto; }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-item:first-child { border-top: 1px solid var(--border); }
+    .faq-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 26px 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+    }
+    .faq-q {
+      font-family: 'Fraunces', serif;
+      font-size: 1.08rem;
+      font-weight: 300;
+      color: var(--dark);
+    }
+    .faq-icon {
+      width: 26px; height: 26px;
+      border: 1.5px solid rgba(26,21,17,0.18);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.9rem;
+      color: var(--gold);
+      transition: all 0.25s ease;
+      font-weight: 400;
+    }
+    .faq-item.open .faq-icon {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: var(--white);
+      transform: rotate(45deg);
+    }
+    .faq-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+    .faq-item.open .faq-body { max-height: 240px; }
+    .faq-inner {
+      padding-bottom: 24px;
+      font-size: 0.9rem;
+      color: var(--text-2);
+      line-height: 1.8;
+    }
+
+    /* ── CTA FINAL ── */
+    .rodape-cta {
+      background: var(--dark-2);
+      padding: 120px 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .rodape-cta-glow {
+      position: absolute;
+      bottom: -100px; left: 50%;
+      transform: translateX(-50%);
+      width: 560px; height: 560px;
+      background: radial-gradient(circle, rgba(181,119,26,0.1) 0%, transparent 68%);
+      pointer-events: none;
+    }
+    .rodape-cta .overline { display: block; color: var(--gold-light); margin-bottom: 24px; position: relative; }
+    .rodape-cta h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      font-weight: 300;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .rodape-cta h2 em { color: var(--gold-light); }
+    .rodape-cta p {
+      font-size: 0.98rem;
+      color: rgba(255,255,255,0.48);
+      max-width: 460px;
+      margin: 0 auto 52px;
+      line-height: 1.72;
+      position: relative;
+    }
+    .rodape-cta-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      position: relative;
+    }
+    .rodape-note {
+      font-size: 0.76rem;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--dark);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 28px 36px;
+      text-align: center;
+    }
+    .footer-txt {
+      font-size: 0.76rem;
+      color: rgba(255,255,255,0.28);
+      letter-spacing: 0.04em;
+    }
+    .footer-txt span { color: var(--gold-light); }
+    .footer-txt + .footer-txt { margin-top: 6px; }
+
+    /* ── STICKY BAR ── */
+    .sticky {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(14,12,9,0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(181,119,26,0.2);
+      padding: 14px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      z-index: 100;
+      transform: translateY(100%);
+      transition: transform 0.4s ease;
+    }
+    .sticky.show { transform: translateY(0); }
+    .sticky-left { display: flex; align-items: center; gap: 20px; }
+    .sticky-price {
+      font-family: 'Fraunces', serif;
+      font-size: 1.6rem;
+      font-weight: 300;
+      color: var(--gold-light);
+      letter-spacing: -0.025em;
+    }
+    .sticky-divider { width: 1px; height: 30px; background: rgba(255,255,255,0.1); }
+    .sticky-detail { font-size: 0.76rem; color: rgba(255,255,255,0.38); }
+    .sticky-btn {
+      background: var(--gold);
+      color: var(--dark);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 12px 28px;
+      border-radius: 5px;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+    .sticky-btn:hover { background: var(--gold-light); }
+
+    /* ── REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(26px);
+      transition: opacity 0.72s ease, transform 0.72s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse-line {
+      0%, 100% { opacity: 0.5; transform: scaleY(1);   }
+      50%       { opacity: 1;   transform: scaleY(0.75); }
+    }
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .dim-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 900px) {
+      .problema-inner,
+      .o-que-e-inner,
+      .para-quem-inner { grid-template-columns: 1fr; gap: 48px; }
+      .cinco-d-visual { display: none; }
+      .dim-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps { grid-template-columns: 1fr 1fr; gap: 40px; }
+      .steps::before { display: none; }
+      .depo-grid { grid-template-columns: 1fr; }
+      .entrega-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .stat-item { border-right: none; border-bottom: 1px solid var(--border-dark); }
+      .stat-item:last-child { border-bottom: none; }
+    }
+    @media (max-width: 600px) {
+      .container, .container-sm { padding: 0 20px; }
+      section { padding: 72px 0; }
+      .hero { padding: 100px 20px 60px; }
+      .hero h1 { font-size: 2.9rem; }
+      .dim-grid { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr; }
+      .preco-card { padding: 40px 24px; }
+      .preco-valor { font-size: 4rem; }
+      .sticky { flex-direction: column; gap: 12px; padding: 16px 20px; }
+      .sticky-left { flex-direction: column; gap: 4px; text-align: center; }
+      .sticky-divider { display: none; }
+      .sticky-btn { width: 100%; text-align: center; padding: 14px; }
+      .navbar { padding: 18px 20px; }
+      .navbar.scrolled { padding: 12px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <nav class="navbar" id="navbar">
+    <a href="#" class="navbar-logo">Sandro <span>Lopez</span></a>
+    <a href="#comprar" class="navbar-link">Quero meu diagnóstico</a>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero" id="topo">
+    <div class="hero-glow"></div>
+    <div class="hero-grain"></div>
+    <div class="hero-badge">Protocolo 5D · Sandro Lopez</div>
+    <h1>Descubra o que está<br><em>travando sua vida</em><br>por dentro</h1>
+    <p class="hero-sub">25 perguntas estruturadas. Análise humana. Devolutiva personalizada com o gargalo real mapeado — entregue em até 3 dias.</p>
+    <p class="hero-detail">Via e-mail e WhatsApp &nbsp;·&nbsp; Leitura feita pela equipe do Sandro Lopez</p>
+    <div class="hero-actions">
+      <a href="#comprar" class="btn btn-dark btn-lg">Quero meu diagnóstico</a>
+      <p class="hero-note">R$ 57,00 &nbsp;·&nbsp; Acesso imediato ao protocolo</p>
+    </div>
+    <div class="hero-scroll">
+      <div class="hero-scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ── STATS BAR ── -->
+  <div class="stats-bar">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-num">25</span>
+          <p class="stat-label">Perguntas estruturadas</p>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">5</span>
+          <p class="stat-label">Dimensões internas mapeadas</p>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">3d</span>
+          <p class="stat-label">Para receber sua devolutiva</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PROBLEMA ── -->
+  <section class="problema">
+    <div class="container">
+      <div class="problema-inner">
+        <div class="problema-left reveal">
+          <span class="overline">O problema real</span>
+          <h2>Você trata o sintoma.<br>O problema <em>fica.</em></h2>
+          <div class="body-text">
+            <p>Você já fez curso. Já leu livro. Já orou, planejou, tentou de novo. Mas algo sempre fica no mesmo lugar — a conta, o relacionamento, a sensação de que falta algo que você não consegue nomear.</p>
+            <p><strong>O problema não é falta de informação.</strong> É que você nunca parou pra se diagnosticar de verdade. Nunca olhou de dentro pra fora com honestidade e estrutura.</p>
+            <p>Enquanto o gargalo interno não for identificado, qualquer passo externo vai dar no mesmo resultado. Não porque você não tem fé. Porque você ainda não sabe exatamente onde está o bloqueio.</p>
+          </div>
+        </div>
+        <div class="reveal">
+          <div class="quote-block">
+            <div class="quote-block-orb"></div>
+            <p>"Deus já liberou. O problema é que você ainda não tem estrutura para sustentar o que Ele liberou."</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── O QUE É ── -->
+  <section class="o-que-e">
+    <div class="container">
+      <div class="o-que-e-inner">
+        <div class="o-que-e-left reveal">
+          <span class="overline">O que é o Diagnóstico 5D</span>
+          <h2>Não é curso.<br>Não é PDF genérico.<br><em>É um processo real.</em></h2>
+          <p>O Diagnóstico 5D é um protocolo de análise personalizada criado para identificar o que está travando sua vida por dentro — na raiz, não na superfície.</p>
+          <p>Você responde 25 perguntas estruturadas. A equipe do Sandro Lopez lê, analisa e devolve um diagnóstico individual — com <strong>o gargalo mapeado</strong> e <strong>o próximo movimento concreto</strong> para você sair do lugar.</p>
+          <p>Nada automatizado. Nada genérico. Uma leitura real da sua situação real.</p>
+        </div>
+        <div class="cinco-d-visual reveal">
+          <div class="cinco-d-svg-wrap">
+            <svg viewBox="0 0 280 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Outer ring -->
+              <circle cx="140" cy="140" r="130" stroke="rgba(181,119,26,0.18)" stroke-width="1"/>
+              <!-- Mid ring -->
+              <circle cx="140" cy="140" r="92"  stroke="rgba(181,119,26,0.12)" stroke-width="1"/>
+              <!-- Inner circle -->
+              <circle cx="140" cy="140" r="52"  fill="#B5771A" opacity="0.92"/>
+              <!-- 5D label -->
+              <text x="140" y="148" font-family="serif" font-size="26" font-weight="300" fill="#0E0C09" text-anchor="middle" dominant-baseline="middle">5D</text>
+              <!-- 5 dimension dots on mid ring -->
+              <circle cx="140" cy="48"  r="6" fill="#B5771A"/>
+              <circle cx="228" cy="111" r="6" fill="#B5771A"/>
+              <circle cx="195" cy="219" r="6" fill="#B5771A"/>
+              <circle cx="85"  cy="219" r="6" fill="#B5771A"/>
+              <circle cx="52"  cy="111" r="6" fill="#B5771A"/>
+              <!-- Connecting lines from center to dots -->
+              <line x1="140" y1="140" x2="140" y2="54"  stroke="rgba(181,119,26,0.22)" stroke-width="1"/>
+              <line x1="140" y1="140" x2="222" y2="115" stroke="rgba(181,119,26,0.22)" stroke-width="1"/>
+              <line x1="140" y1="140" x2="191" y2="213" stroke="rgba(181,119,26,0.22)" stroke-width="1"/>
+              <line x1="140" y1="140" x2="89"  y2="213" stroke="rgba(181,119,26,0.22)" stroke-width="1"/>
+              <line x1="140" y1="140" x2="58"  y2="115" stroke="rgba(181,119,26,0.22)" stroke-width="1"/>
+              <!-- Dim labels -->
+              <text x="140" y="30"  font-family="'Syne',sans-serif" font-size="8" fill="rgba(255,255,255,0.4)" text-anchor="middle">IDENTIDADE</text>
+              <text x="252" y="108" font-family="'Syne',sans-serif" font-size="8" fill="rgba(255,255,255,0.4)" text-anchor="start">GOVERNO</text>
+              <text x="200" y="240" font-family="'Syne',sans-serif" font-size="8" fill="rgba(255,255,255,0.4)" text-anchor="middle">PROSPERIDADE</text>
+              <text x="80"  y="240" font-family="'Syne',sans-serif" font-size="8" fill="rgba(255,255,255,0.4)" text-anchor="middle">FÉ &amp; AÇÃO</text>
+              <text x="8"   y="108" font-family="'Syne',sans-serif" font-size="8" fill="rgba(255,255,255,0.4)" text-anchor="start">PROCESSO</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 5 DIMENSÕES ── -->
+  <section class="dimensoes">
+    <div class="container">
+      <div class="dimensoes-header reveal">
+        <span class="overline">As 5 dimensões</span>
+        <h2>Cada dimensão revela<br>uma <em>camada diferente</em></h2>
+      </div>
+      <div class="dim-grid reveal">
+        <div class="dim-card">
+          <span class="dim-num">01</span>
+          <span class="dim-tag">Raiz</span>
+          <div class="dim-title">Identidade e Posição</div>
+          <div class="dim-desc">Quem você acredita que é determina o que você permite na sua vida. Essa dimensão expõe a base — certa ou torta — sobre a qual você constrói tudo.</div>
+        </div>
+        <div class="dim-card">
+          <span class="dim-num">02</span>
+          <span class="dim-tag">Estrutura</span>
+          <div class="dim-title">Governo Interior</div>
+          <div class="dim-desc">Antes de qualquer resultado externo, existe um nível de domínio interno. Aqui identificamos o que comanda sua vida de verdade — e o que deveria comandar.</div>
+        </div>
+        <div class="dim-card">
+          <span class="dim-num">03</span>
+          <span class="dim-tag">Capacidade</span>
+          <div class="dim-title">Preparação e Processo</div>
+          <div class="dim-desc">Muita gente quer o resultado mas pula o processo. Essa dimensão revela se você está preparado para carregar o que está pedindo — ou se vai perder de novo.</div>
+        </div>
+        <div class="dim-card">
+          <span class="dim-num">04</span>
+          <span class="dim-tag">Movimento</span>
+          <div class="dim-title">Fé e Ação</div>
+          <div class="dim-desc">Fé sem movimento é vazia. Ação sem fé é esforço. Aqui mapeamos o alinhamento entre o que você crê e o que você de fato faz.</div>
+        </div>
+        <div class="dim-card">
+          <span class="dim-num">05</span>
+          <span class="dim-tag">Resultados</span>
+          <div class="dim-title">Prosperidade e Leis</div>
+          <div class="dim-desc">Prosperidade tem leis. Essa dimensão mapeia sua relação real com dinheiro, abundância e sustentação — o que você constrói e o que você perde.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── VERSÍCULO ── -->
+  <div class="versiculo">
+    <blockquote>"O coração do homem pode fazer muitos planos, mas o conselho do Senhor é o que prevalece."</blockquote>
+    <cite>Provérbios 19:21</cite>
+  </div>
+
+  <!-- ── COMO FUNCIONA ── -->
+  <section class="como-funciona">
+    <div class="container">
+      <div class="como-funciona-header reveal">
+        <span class="overline">Como funciona</span>
+        <h2>Simples. <em>Direto.</em> Real.</h2>
+      </div>
+      <div class="steps reveal">
+        <div class="step">
+          <div class="step-circle"><span class="step-n">1</span></div>
+          <div class="step-title">Você compra</div>
+          <div class="step-desc">Acesso imediato ao protocolo completo com as 25 perguntas nas 5 dimensões.</div>
+        </div>
+        <div class="step">
+          <div class="step-circle"><span class="step-n">2</span></div>
+          <div class="step-title">Você preenche</div>
+          <div class="step-desc">Responde com honestidade. Sem certo ou errado. Cada resposta alimenta a análise.</div>
+        </div>
+        <div class="step">
+          <div class="step-circle"><span class="step-n">3</span></div>
+          <div class="step-title">A equipe analisa</div>
+          <div class="step-desc">A equipe lê cada resposta, cruza as 5 dimensões e identifica o gargalo principal.</div>
+        </div>
+        <div class="step">
+          <div class="step-circle"><span class="step-n">4</span></div>
+          <div class="step-title">Você recebe</div>
+          <div class="step-desc">Em até 3 dias úteis, a devolutiva personalizada chega no seu e-mail e WhatsApp.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ENTREGA ── -->
+  <section class="entrega">
+    <div class="container">
+      <div class="entrega-header reveal">
+        <span class="overline">O que você recebe</span>
+        <h2>Uma leitura honesta<br>da sua <em>situação real</em></h2>
+      </div>
+      <div class="entrega-grid reveal">
+        <div class="entrega-card">
+          <div class="entrega-icon">📋</div>
+          <div class="entrega-title">Protocolo das 25 perguntas</div>
+          <div class="entrega-desc">Acesso imediato após a compra. Estruturado em 5 blocos, cada um revelando uma camada diferente do que está travando seu avanço.</div>
+        </div>
+        <div class="entrega-card">
+          <div class="entrega-icon">🔍</div>
+          <div class="entrega-title">Análise personalizada</div>
+          <div class="entrega-desc">Não é automático. É a equipe lendo suas respostas e cruzando as dimensões para encontrar o gargalo principal da sua vida agora.</div>
+        </div>
+        <div class="entrega-card">
+          <div class="entrega-icon">📩</div>
+          <div class="entrega-title">Devolutiva via e-mail e WhatsApp</div>
+          <div class="entrega-desc">Em até 3 dias, você recebe nos canais que usa todos os dias. Não some numa plataforma — chega onde você está.</div>
+        </div>
+        <div class="entrega-card">
+          <div class="entrega-icon">🎯</div>
+          <div class="entrega-title">Próximo movimento claro</div>
+          <div class="entrega-desc">Não só o diagnóstico. O próximo passo concreto e específico pra você sair do lugar onde está emperrado.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PARA QUEM ── -->
+  <section class="para-quem">
+    <div class="container">
+      <div class="para-quem-inner">
+        <div class="para-quem-left reveal">
+          <span class="overline">Para quem é</span>
+          <h2>Para quem cansou de<br><em>tratar o sintoma</em></h2>
+          <p>Se você reconhece algum desses cenários, o Diagnóstico 5D foi feito para você.</p>
+        </div>
+        <div class="checks reveal">
+          <div class="check-row">
+            <div class="check-dot"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>
+            <div class="check-text">Você sente que avança em alguns pontos mas algo sempre trava no mesmo lugar</div>
+          </div>
+          <div class="check-row">
+            <div class="check-dot"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>
+            <div class="check-text">Você já tentou várias abordagens e nenhuma resolveu de vez</div>
+          </div>
+          <div class="check-row">
+            <div class="check-dot"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>
+            <div class="check-text">Você quer entender exatamente qual é o gargalo — não adivinhar</div>
+          </div>
+          <div class="check-row">
+            <div class="check-dot"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>
+            <div class="check-text">Você acredita que a mudança real começa por dentro e quer dar esse passo com estrutura</div>
+          </div>
+          <div class="check-row">
+            <div class="check-dot"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>
+            <div class="check-text">Você tem fé mas sente que algo entre a fé e os resultados não está conectado</div>
+          </div>
+          <div class="check-row">
+            <div class="check-dot"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>
+            <div class="check-text">Você quer clareza — não mais conteúdo genérico que não fala da sua situação</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DEPOIMENTOS ── -->
+  <section class="prova">
+    <div class="container">
+      <div class="prova-header reveal">
+        <span class="overline">Quem já passou pelo processo</span>
+        <h2>O que muda quando<br><em>você se enxerga</em></h2>
+      </div>
+      <div class="depo-grid reveal">
+        <div class="depo-card">
+          <div class="depo-stars">
+            <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          </div>
+          <p class="depo-text">"Pela primeira vez alguém me ajudou a ver que o problema não era o dinheiro, era o que eu acreditava que merecia. O diagnóstico foi um espelho."</p>
+          <span class="depo-author">— Mentee do Protocolo José</span>
+        </div>
+        <div class="depo-card">
+          <div class="depo-stars">
+            <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          </div>
+          <p class="depo-text">"Eu achei que sabia meu problema. O diagnóstico mostrou que era outro. Aí as coisas começaram a mudar de verdade."</p>
+          <span class="depo-author">— Participante do 5D</span>
+        </div>
+        <div class="depo-card">
+          <div class="depo-stars">
+            <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          </div>
+          <p class="depo-text">"As perguntas foram diretas demais. Me desconfortaram. E foi exatamente esse desconforto que me fez avançar."</p>
+          <span class="depo-author">— Aluna do GPH</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PREÇO ── -->
+  <section class="preco-section" id="comprar">
+    <div class="container-sm">
+      <div class="preco-header reveal">
+        <span class="overline">Investimento</span>
+        <h2>Menos do que você gasta<br>tratando o <em>sintoma errado</em></h2>
+      </div>
+      <div class="preco-card reveal">
+        <div class="preco-card-glow"></div>
+        <span class="preco-badge">Oferta de lançamento</span>
+        <p class="preco-de">De R$ 97,00</p>
+        <div class="preco-valor">R$ 57</div>
+        <p class="preco-label">pagamento único &nbsp;·&nbsp; acesso imediato</p>
+        <div class="preco-hr"></div>
+        <ul class="preco-itens">
+          <li class="preco-item"><span class="preco-dot"></span>Protocolo com 25 perguntas nas 5 dimensões</li>
+          <li class="preco-item"><span class="preco-dot"></span>Análise humana e personalizada pela equipe</li>
+          <li class="preco-item"><span class="preco-dot"></span>Devolutiva com o gargalo principal mapeado</li>
+          <li class="preco-item"><span class="preco-dot"></span>Próximo passo concreto específico para você</li>
+          <li class="preco-item"><span class="preco-dot"></span>Entrega via e-mail e WhatsApp em até 3 dias</li>
+        </ul>
+        <a href="#" class="preco-btn">Quero meu diagnóstico agora</a>
+        <p class="preco-garantia">Pagamento seguro. Assim que confirmado, você recebe o protocolo imediatamente. A devolutiva chega em até 48h a 3 dias corridos.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FAQ ── -->
+  <section class="faq">
+    <div class="container">
+      <div class="faq-header reveal">
+        <span class="overline">Perguntas frequentes</span>
+        <h2>Dúvidas respondidas<br><em>direto ao ponto</em></h2>
+      </div>
+      <div class="faq-list reveal">
+        <div class="faq-item">
+          <button class="faq-btn">
+            <span class="faq-q">Precisa ter base bíblica para fazer?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">
+            <div class="faq-inner">Não. O protocolo é estruturado em princípios universais de governo interior e prosperidade. Quem tem raiz bíblica vai reconhecer a linguagem — mas não é requisito.</div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-btn">
+            <span class="faq-q">A análise é automática ou feita por pessoas?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">
+            <div class="faq-inner">Feita por pessoas. A equipe do Sandro Lopez lê cada resposta individualmente. Por isso tem prazo de entrega — não é instantâneo.</div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-btn">
+            <span class="faq-q">Em quanto tempo recebo a devolutiva?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">
+            <div class="faq-inner">Em até 48 horas a 3 dias corridos após o envio das suas respostas completas. A devolutiva chega no seu e-mail e no WhatsApp que você informar.</div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-btn">
+            <span class="faq-q">O diagnóstico me diz o que fazer depois?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">
+            <div class="faq-inner">Sim. A devolutiva inclui o gargalo identificado e o próximo movimento concreto. Não é só uma leitura — é uma direção clara para o próximo passo.</div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-btn">
+            <span class="faq-q">Posso fazer mesmo sem nunca ter feito nada parecido?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">
+            <div class="faq-inner">Especialmente para quem nunca parou pra se diagnosticar. Esse é exatamente o perfil para quem o 5D foi criado.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA FINAL ── -->
+  <section class="rodape-cta">
+    <div class="rodape-cta-glow"></div>
+    <div class="container-sm">
+      <div class="reveal">
+        <span class="overline">Decisão</span>
+        <h2>Você pode continuar<br>sem saber onde está<br>o <em>problema real.</em></h2>
+        <p>Ou pode, por R$ 57, ter uma leitura honesta da sua situação — com o gargalo mapeado e o próximo passo claro. A escolha é simples.</p>
+        <div class="rodape-cta-actions">
+          <a href="#comprar" class="btn btn-gold btn-lg">Quero me diagnosticar agora</a>
+          <p class="rodape-note">R$ 57,00 &nbsp;·&nbsp; Acesso imediato &nbsp;·&nbsp; Devolutiva em até 3 dias</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <p class="footer-txt">© 2025 <span>Sandro Lopez</span> · Protocolo José — GPH · Governo, Prosperidade, Honra</p>
+    <p class="footer-txt">@sandrolopez &nbsp;·&nbsp; Diagnóstico 5D — Governo Interior &amp; Prosperidade</p>
+  </footer>
+
+  <!-- ── STICKY BAR ── -->
+  <div class="sticky" id="sticky">
+    <div class="sticky-left">
+      <p class="sticky-price">R$ 57,00</p>
+      <div class="sticky-divider"></div>
+      <p class="sticky-detail">Acesso imediato · Devolutiva em 3 dias</p>
+    </div>
+    <a href="#comprar" class="sticky-btn">Quero meu diagnóstico</a>
+  </div>
+
+  <script>
+    // Navbar scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 70);
+    }, { passive: true });
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const ro = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => ro.observe(el));
+
+    // Sticky bar
+    const sticky = document.getElementById('sticky');
+    window.addEventListener('scroll', () => {
+      sticky.classList.toggle('show', window.scrollY > 600);
+    }, { passive: true });
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-item').forEach(item => {
+      item.querySelector('.faq-btn').addEventListener('click', () => {
+        const open = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+        if (!open) item.classList.add('open');
+      });
+    });
+  </script>
+
+</body>
+</html>
