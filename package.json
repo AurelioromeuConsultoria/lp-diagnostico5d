@@ -1,0 +1,13 @@
+{
+  "name": "lp-diagnostico5d",
+  "version": "1.0.0",
+  "description": "Diagnóstico 5D - Landing page e formulário",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --no-warnings=ExperimentalWarning server.js",
+    "dev": "node --no-warnings=ExperimentalWarning server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

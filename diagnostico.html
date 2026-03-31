@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnóstico Profundo de Princípios · Sandro Lopez</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Variables ─────────────────────────────────── */
+    :root {
+      --orange:      #C94B00;
+      --orange-2:    #E8621A;
+      --orange-pale: #FDE8D6;
+      --white:       #FFFFFF;
+      --off:         #FAFAF7;
+      --warm:        #F5EDE0;
+      --dark:        #180E06;
+      --dark-2:      #251507;
+      --text:        #180E06;
+      --text-2:      #6B5040;
+      --text-3:      #A08878;
+      --radius:      16px;
+      --transition:  0.3s ease;
+    }
+
+    /* ─── Reset ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      line-height: 1.65;
+      color: var(--text);
+      background: var(--off);
+      min-height: 100vh;
+    }
+
+    /* ─── Header ─────────────────────────────────────── */
+    .site-header {
+      background: var(--dark);
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .site-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--white);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .site-logo span { color: var(--orange); }
+    .header-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+
+    /* ─── Page wrapper ───────────────────────────────── */
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+    }
+
+    /* ─── Progress bar ───────────────────────────────── */
+    .progress-wrap {
+      margin-bottom: 48px;
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .progress-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-3);
+    }
+    .progress-step {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--orange);
+    }
+    .progress-track {
+      height: 4px;
+      background: rgba(201,75,0,0.15);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: var(--orange);
+      border-radius: 100px;
+      transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    }
+    .progress-dots {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      justify-content: center;
+    }
+    .progress-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(201,75,0,0.2);
+      transition: all 0.3s ease;
+    }
+    .progress-dot.active { background: var(--orange); }
+    .progress-dot.done   { background: var(--orange-2); }
+
+    /* ─── Intro screen ───────────────────────────────── */
+    .intro-hero {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .intro-badge {
+      display: inline-block;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--orange);
+      background: var(--orange-pale);
+      padding: 6px 16px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+    }
+    .intro-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 900;
+      color: var(--dark);
+      line-height: 1.15;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+    .intro-title em {
+      color: var(--orange);
+      font-style: normal;
+    }
+    .intro-desc {
+      font-size: 1.05rem;
+      color: var(--text-2);
+      max-width: 520px;
+      margin: 0 auto 32px;
+    }
+    .intro-divider {
+      width: 40px;
+      height: 3px;
+      background: var(--orange);
+      border-radius: 100px;
+      margin: 0 auto 40px;
+    }
+
+    /* ─── Cards ──────────────────────────────────────── */
+    .card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 40px 44px;
+      box-shadow: 0 2px 24px rgba(24,14,6,0.06);
+      margin-bottom: 24px;
+    }
+    @media (max-width: 600px) {
+      .card { padding: 28px 24px; }
+    }
+
+    /* ─── Block header ───────────────────────────────── */
+    .block-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 8px;
+    }
+    .block-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: var(--dark);
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+    .block-sub {
+      font-size: 0.9rem;
+      color: var(--text-3);
+      margin-bottom: 32px;
+    }
+    .block-divider {
+      height: 1px;
+      background: rgba(24,14,6,0.08);
+      margin-bottom: 32px;
+    }
+
+    /* ─── Form fields ────────────────────────────────── */
+    .field {
+      margin-bottom: 28px;
+    }
+    .field:last-of-type { margin-bottom: 0; }
+
+    .field-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .field-num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--orange-pale);
+      color: var(--orange);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .field-text {
+      font-size: 0.97rem;
+      font-weight: 500;
+      color: var(--dark);
+      line-height: 1.45;
+      padding-top: 4px;
+    }
+
+    textarea, input[type="text"], input[type="tel"] {
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: var(--off);
+      border: 1.5px solid rgba(24,14,6,0.12);
+      border-radius: 10px;
+      padding: 14px 18px;
+      resize: vertical;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      outline: none;
+      line-height: 1.6;
+    }
+    textarea:focus, input[type="text"]:focus, input[type="tel"]:focus {
+      border-color: var(--orange);
+      box-shadow: 0 0 0 3px rgba(201,75,0,0.1);
+      background: var(--white);
+    }
+    textarea::placeholder, input::placeholder {
+      color: var(--text-3);
+    }
+    textarea { min-height: 96px; }
+
+    /* ─── Pull quote ─────────────────────────────────── */
+    .pull-quote {
+      border-left: 3px solid var(--orange);
+      border-radius: 0 10px 10px 0;
+      background: var(--warm);
+      padding: 20px 24px;
+      margin-top: 36px;
+    }
+    .pull-quote p {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--text-2);
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    .pull-quote cite {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--orange);
+      font-style: normal;
+    }
+
+    /* ─── Movement tip ───────────────────────────────── */
+    .movimento {
+      display: flex;
+      gap: 14px;
+      background: rgba(201,75,0,0.06);
+      border: 1px solid rgba(201,75,0,0.15);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-top: 16px;
+    }
+    .movimento-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      line-height: 1;
+      margin-top: 2px;
+    }
+    .movimento p {
+      font-size: 0.88rem;
+      color: var(--text-2);
+      line-height: 1.55;
+    }
+    .movimento strong {
+      color: var(--orange);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* ─── Intro personal fields ──────────────────────── */
+    .intro-fields {
+      display: grid;
+      gap: 20px;
+    }
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .field-group label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-2);
+    }
+    .field-group .field-hint {
+      font-size: 0.8rem;
+      color: var(--text-3);
+      margin-top: -4px;
+    }
+
+    /* ─── Buttons ────────────────────────────────────── */
+    .btn-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-top: 32px;
+    }
+    .btn {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      padding: 15px 32px;
+      cursor: pointer;
+      transition: all var(--transition);
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: var(--orange);
+      color: var(--white);
+    }
+    .btn-primary:hover {
+      background: var(--orange-2);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 28px rgba(201,75,0,0.35);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-2);
+      border: 1.5px solid rgba(24,14,6,0.15);
+    }
+    .btn-ghost:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    .btn-full {
+      width: 100%;
+      justify-content: center;
+    }
+    .btn-submit {
+      background: var(--orange);
+      color: var(--white);
+      padding: 18px 44px;
+      font-size: 1rem;
+    }
+    .btn-submit:hover {
+      background: var(--orange-2);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(201,75,0,0.4);
+    }
+
+    /* ─── Loading spinner ────────────────────────────── */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Success screen ─────────────────────────────── */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 60px 24px 40px;
+    }
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--orange-pale);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 32px;
+    }
+    .success-icon svg {
+      width: 40px;
+      height: 40px;
+      stroke: var(--orange);
+    }
+    .success-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 900;
+      color: var(--dark);
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+    .success-title em { color: var(--orange); font-style: normal; }
+    .success-desc {
+      font-size: 1.05rem;
+      color: var(--text-2);
+      max-width: 480px;
+      margin: 0 auto 40px;
+      line-height: 1.65;
+    }
+    .success-verse {
+      border-left: 3px solid var(--orange);
+      border-radius: 0 10px 10px 0;
+      background: var(--warm);
+      padding: 20px 24px;
+      text-align: left;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .success-verse p {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--text-2);
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    .success-verse cite {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--orange);
+      font-style: normal;
+    }
+
+    /* ─── Error state ────────────────────────────────── */
+    .error-msg {
+      display: none;
+      background: #FFF2F2;
+      border: 1px solid rgba(180,30,30,0.2);
+      border-radius: 10px;
+      color: #8B1A1A;
+      font-size: 0.9rem;
+      padding: 14px 18px;
+      margin-top: 16px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .error-msg.show { display: block; }
+
+    /* ─── Step visibility ────────────────────────────── */
+    .step { display: none; }
+    .step.active { display: block; }
+
+    /* ─── Footer ─────────────────────────────────────── */
+    .form-footer {
+      text-align: center;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid rgba(24,14,6,0.08);
+    }
+    .form-footer p {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.75rem;
+      color: var(--text-3);
+      letter-spacing: 0.05em;
+    }
+    .form-footer a {
+      color: var(--orange);
+      text-decoration: none;
+    }
+
+    /* ─── Animations ─────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .step.active .card,
+    .step.active .progress-wrap,
+    .intro-hero { animation: fadeUp 0.45s ease both; }
+    .step.active .card:nth-child(2) { animation-delay: 0.07s; }
+    .step.active .card:nth-child(3) { animation-delay: 0.14s; }
+
+    /* ─── Restore banner ─────────────────────────────── */
+    .restore-banner {
+      background: var(--white);
+      border: 1.5px solid rgba(201,75,0,0.3);
+      border-radius: 14px;
+      padding: 18px 22px;
+      margin-bottom: 28px;
+      box-shadow: 0 2px 16px rgba(201,75,0,0.08);
+      animation: fadeUp 0.4s ease both;
+    }
+    .restore-inner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .restore-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .restore-text { flex: 1; min-width: 160px; }
+    .restore-text strong {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--dark);
+      display: block;
+      margin-bottom: 2px;
+    }
+    .restore-text p { font-size: 0.82rem; color: var(--text-2); }
+    .restore-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .btn-sm { padding: 9px 18px !important; font-size: 0.82rem !important; }
+
+    /* ─── Modal ──────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(24,14,6,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 36px 40px;
+      max-width: 440px;
+      width: 100%;
+      transform: translateY(16px);
+      transition: transform 0.25s ease;
+      box-shadow: 0 24px 60px rgba(24,14,6,0.25);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-icon {
+      width: 52px; height: 52px;
+      background: var(--orange-pale);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+    }
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+    .modal-desc {
+      font-size: 0.9rem;
+      color: var(--text-2);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+    .modal-desc strong { color: var(--dark); }
+    .modal-actions { display: flex; flex-direction: column; gap: 10px; }
+    .modal-actions .btn { justify-content: center; width: 100%; }
+
+    /* ─── Btn loading state ───────────────────────────── */
+    .btn-loading { opacity: 0.7; pointer-events: none; }
+
+    /* ─── Responsive ─────────────────────────────────── */
+    @media (max-width: 600px) {
+      .site-header { padding: 16px 20px; }
+      .page { padding: 40px 16px 80px; }
+      .btn-row { flex-direction: column-reverse; }
+      .btn-row .btn { width: 100%; justify-content: center; }
+      .restore-actions { width: 100%; }
+      .restore-actions .btn { flex: 1; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <a href="index.html" class="site-logo">Sandro<span>.</span>Lopez</a>
+    <span class="header-label">Protocolo José · Mentoria Abraão</span>
+  </header>
+
+  <div class="page">
+
+    <!-- Restore banner (shown if there's a saved draft) -->
+    <div class="restore-banner" id="restore-banner" style="display:none;">
+      <div class="restore-inner">
+        <span class="restore-icon">📋</span>
+        <div class="restore-text">
+          <strong>Rascunho encontrado</strong>
+          <p id="restore-desc">Você começou um diagnóstico e não finalizou. Quer continuar?</p>
+        </div>
+        <div class="restore-actions">
+          <button class="btn btn-primary btn-sm" onclick="restoreSession()">Continuar</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearSession()">Recomeçar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         STEP 0 — INTRO / DADOS PESSOAIS
+    ══════════════════════════════════════════════════ -->
+    <div class="step active" id="step-0">
+
+      <div class="intro-hero">
+        <span class="intro-badge">Diagnóstico Profundo de Princípios</span>
+        <h1 class="intro-title">Onde está a <em>quebra</em><br>que está travando tudo?</h1>
+        <div class="intro-divider"></div>
+        <p class="intro-desc">
+          Responda com honestidade. Não há respostas certas ou erradas —
+          há apenas a sua verdade agora. Esse diagnóstico é o primeiro passo
+          para um movimento real.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="block-num">Antes de começar</div>
+        <div class="block-title">Quem é você?</div>
+        <p class="block-sub">Precisamos de algumas informações para identificar seu diagnóstico.</p>
+        <div class="block-divider"></div>
+
+        <div class="intro-fields">
+          <div class="field-group">
+            <label for="nome">Seu nome completo</label>
+            <input type="text" id="nome" name="nome" placeholder="Ex.: Maria das Graças" autocomplete="name" />
+          </div>
+          <div class="field-group">
+            <label for="whatsapp">WhatsApp (com DDD)</label>
+            <input type="tel" id="whatsapp" name="whatsapp" placeholder="Ex.: (11) 99999-9999" autocomplete="tel" />
+            <span class="field-hint">Usado apenas para entrar em contato sobre o diagnóstico.</span>
+          </div>
+        </div>
+
+        <div class="error-msg" id="error-0">Por favor, preencha seu nome antes de continuar.</div>
+
+        <div class="btn-row" style="justify-content:flex-end;">
+          <button class="btn btn-primary" onclick="goNext(0)">
+            Começar diagnóstico
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         STEP 1 — IDENTIDADE E POSIÇÃO
+    ══════════════════════════════════════════════════ -->
+    <div class="step" id="step-1">
+
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span class="progress-label">Seu progresso</span>
+          <span class="progress-step" id="progress-text">Bloco 1 de 5</span>
+        </div>
+        <div class="progress-track"><div class="progress-bar" id="progress-bar" style="width:20%"></div></div>
+        <div class="progress-dots">
+          <div class="progress-dot active" id="dot-1"></div>
+          <div class="progress-dot" id="dot-2"></div>
+          <div class="progress-dot" id="dot-3"></div>
+          <div class="progress-dot" id="dot-4"></div>
+          <div class="progress-dot" id="dot-5"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="block-num">Bloco 1 · 5 perguntas</div>
+        <div class="block-title">Identidade e Posição</div>
+        <p class="block-sub">Como você se vê — e como isso molda tudo ao seu redor.</p>
+        <div class="block-divider"></div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">1</span>
+            <span class="field-text">Quando você pensa em dinheiro, qual é o primeiro sentimento que vem?</span>
+          </div>
+          <textarea id="q1" name="q1" placeholder="Escreva com honestidade..."></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">2</span>
+            <span class="field-text">Você se vê como provedora ou como alguém que está tentando sobreviver?</span>
+          </div>
+          <textarea id="q2" name="q2" placeholder="O que essa imagem diz sobre você?"></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">3</span>
+            <span class="field-text">Você trabalha para pagar contas ou trabalha com propósito definido?</span>
+          </div>
+          <textarea id="q3" name="q3" placeholder="Seja específica..."></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">4</span>
+            <span class="field-text">Existe algo que você acredita que "pessoas como você" não conseguem ter?</span>
+          </div>
+          <textarea id="q4" name="q4" placeholder="O que é esse limite — e de onde ele veio?"></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">5</span>
+            <span class="field-text">Quando alguém próximo prospera, qual é sua reação interna?</span>
+          </div>
+          <textarea id="q5" name="q5" placeholder="Seja honesta — isso é entre você e o diagnóstico..."></textarea>
+        </div>
+
+        <div class="pull-quote">
+          <p>"Porque qual é o homem que pensa em seu coração, tal é ele."</p>
+          <cite>Provérbios 23:7</cite>
+        </div>
+
+        <div class="movimento">
+          <span class="movimento-icon">⚡</span>
+          <div>
+            <strong>Movimento 7 dias</strong>
+            <p>Escreva toda manhã uma frase declarando quem você é — não o que você faz. Identidade, não tarefa.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goPrev(1)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Voltar
+        </button>
+        <button class="btn btn-primary" onclick="goNext(1)">
+          Próximo bloco
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         STEP 2 — GOVERNO INTERIOR
+    ══════════════════════════════════════════════════ -->
+    <div class="step" id="step-2">
+
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span class="progress-label">Seu progresso</span>
+          <span class="progress-step">Bloco 2 de 5</span>
+        </div>
+        <div class="progress-track"><div class="progress-bar" style="width:40%"></div></div>
+        <div class="progress-dots">
+          <div class="progress-dot done"></div>
+          <div class="progress-dot active"></div>
+          <div class="progress-dot"></div>
+          <div class="progress-dot"></div>
+          <div class="progress-dot"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="block-num">Bloco 2 · 5 perguntas</div>
+        <div class="block-title">Governo Interior</div>
+        <p class="block-sub">Quem governa a sua rotina — você ou as circunstâncias?</p>
+        <div class="block-divider"></div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">6</span>
+            <span class="field-text">Sua rotina diária é construída por você ou ditada pelas urgências?</span>
+          </div>
+          <textarea id="q6" name="q6" placeholder="Descreva como sua rotina realmente funciona..."></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">7</span>
+            <span class="field-text">Você tem um tempo reservado para silêncio e direção — sem celular, sem tarefas?</span>
+          </div>
+          <textarea id="q7" name="q7" placeholder="Quando? Com que frequência?"></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">8</span>
+            <span class="field-text">Você termina o que começa? Dê exemplos reais.</span>
+          </div>
+          <textarea id="q8" name="q8" placeholder="Pense em projetos, compromissos, metas..."></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">9</span>
+            <span class="field-text">Há decisões que você sabe que precisa tomar e está adiando? Quais?</span>
+          </div>
+          <textarea id="q9" name="q9" placeholder="Liste com coragem..."></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">10</span>
+            <span class="field-text">Você descansa com intencionalidade ou só para quando está esgotada?</span>
+          </div>
+          <textarea id="q10" name="q10" placeholder="Como você cuida da sua energia?"></textarea>
+        </div>
+
+        <div class="pull-quote">
+          <p>"Melhor é o fim das coisas do que o seu começo; melhor é o longânimo do que o altivo de espírito."</p>
+          <cite>Eclesiastes 7:8</cite>
+        </div>
+
+        <div class="movimento">
+          <span class="movimento-icon">⚡</span>
+          <div>
+            <strong>Movimento 7 dias</strong>
+            <p>Escolhe uma decisão que está adiando e fecha até sexta. Só uma — mas fecha.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goPrev(2)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Voltar
+        </button>
+        <button class="btn btn-primary" onclick="goNext(2)">
+          Próximo bloco
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         STEP 3 — PREPARAÇÃO E PROCESSO
+    ══════════════════════════════════════════════════ -->
+    <div class="step" id="step-3">
+
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span class="progress-label">Seu progresso</span>
+          <span class="progress-step">Bloco 3 de 5</span>
+        </div>
+        <div class="progress-track"><div class="progress-bar" style="width:60%"></div></div>
+        <div class="progress-dots">
+          <div class="progress-dot done"></div>
+          <div class="progress-dot done"></div>
+          <div class="progress-dot active"></div>
+          <div class="progress-dot"></div>
+          <div class="progress-dot"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="block-num">Bloco 3 · 5 perguntas</div>
+        <div class="block-title">Preparação e Processo</div>
+        <p class="block-sub">A oportunidade encontra quem está pronto — ou quem está esperando?</p>
+        <div class="block-divider"></div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">11</span>
+            <span class="field-text">Você está se preparando ou esperando a oportunidade aparecer?</span>
+          </div>
+          <textarea id="q11" name="q11" placeholder="O que você está ativamente desenvolvendo?"></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">12</span>
+            <span class="field-text">Qual foi o último aprendizado que mudou sua forma de agir — não só de pensar?</span>
+          </div>
+          <textarea id="q12" name="q12" placeholder="Um aprendizado que produziu movimento real..."></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">13</span>
+            <span class="field-text">Você aceita correção com facilidade ou sente resistência?</span>
+          </div>
+          <textarea id="q13" name="q13" placeholder="Pense em situações concretas recentes..."></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">14</span>
+            <span class="field-text">Existe algo na sua vida que está errado e você ainda não corrigiu?</span>
+          </div>
+          <textarea id="q14" name="q14" placeholder="Seja honesta consigo mesma..."></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">15</span>
+            <span class="field-text">Você está na posição certa agora, ou está forçando uma porta que não é a sua?</span>
+          </div>
+          <textarea id="q15" name="q15" placeholder="O que os resultados têm mostrado?"></textarea>
+        </div>
+
+        <div class="pull-quote">
+          <p>"O homem também não sabe o seu tempo; como os peixes que são presos na rede cruel... assim são os filhos dos homens enlaçados no tempo mau."</p>
+          <cite>Eclesiastes 9:12</cite>
+        </div>
+
+        <div class="movimento">
+          <span class="movimento-icon">⚡</span>
+          <div>
+            <strong>Movimento 7 dias</strong>
+            <p>Identifica onde está forçando resultado sem preparo. Para de empurrar. Usa esses dias para preparar o que falta.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goPrev(3)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Voltar
+        </button>
+        <button class="btn btn-primary" onclick="goNext(3)">
+          Próximo bloco
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         STEP 4 — FÉ, AÇÃO E ALIANÇA
+    ══════════════════════════════════════════════════ -->
+    <div class="step" id="step-4">
+
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span class="progress-label">Seu progresso</span>
+          <span class="progress-step">Bloco 4 de 5</span>
+        </div>
+        <div class="progress-track"><div class="progress-bar" style="width:80%"></div></div>
+        <div class="progress-dots">
+          <div class="progress-dot done"></div>
+          <div class="progress-dot done"></div>
+          <div class="progress-dot done"></div>
+          <div class="progress-dot active"></div>
+          <div class="progress-dot"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="block-num">Bloco 4 · 5 perguntas</div>
+        <div class="block-title">Fé, Ação e Aliança</div>
+        <p class="block-sub">Fé sem obra é palavra sem resultado. Com quem você está caminhando?</p>
+        <div class="block-divider"></div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">16</span>
+            <span class="field-text">Você tem clareza do que foi chamada a fazer — ou ainda está testando possibilidades?</span>
+          </div>
+          <textarea id="q16" name="q16" placeholder="Descreva onde você está nessa jornada de propósito..."></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">17</span>
+            <span class="field-text">Sua fé produz ação concreta ou produz espera passiva?</span>
+          </div>
+          <textarea id="q17" name="q17" placeholder="Dê exemplos do que sua fé tem movido..."></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">18</span>
+            <span class="field-text">Quem está na sua aliança mais próxima? Essas pessoas avançam ou estacionam?</span>
+          </div>
+          <textarea id="q18" name="q18" placeholder="Pense nas 3 pessoas com quem mais convive..."></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">19</span>
+            <span class="field-text">Você tem alguém que fala verdade para você — mesmo quando dói?</span>
+          </div>
+          <textarea id="q19" name="q19" placeholder="Quem é essa pessoa? O que ela representa?"></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">20</span>
+            <span class="field-text">Existe algo que Deus já falou pra você que você ainda não obedeceu?</span>
+          </div>
+          <textarea id="q20" name="q20" placeholder="Responda com coragem e honestidade..."></textarea>
+        </div>
+
+        <div class="pull-quote">
+          <p>"Assim também a fé, se não tiver obras, é morta em si mesma."</p>
+          <cite>Tiago 2:17</cite>
+        </div>
+
+        <div class="movimento">
+          <span class="movimento-icon">⚡</span>
+          <div>
+            <strong>Movimento 7 dias</strong>
+            <p>Avalia as 3 pessoas mais próximas. Elas te desafiam a crescer ou confirmam onde você está? Anota com honestidade.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goPrev(4)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Voltar
+        </button>
+        <button class="btn btn-primary" onclick="goNext(4)">
+          Último bloco
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         STEP 5 — PROSPERIDADE E LEIS
+    ══════════════════════════════════════════════════ -->
+    <div class="step" id="step-5">
+
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span class="progress-label">Seu progresso</span>
+          <span class="progress-step">Bloco 5 de 5 — Último!</span>
+        </div>
+        <div class="progress-track"><div class="progress-bar" style="width:100%"></div></div>
+        <div class="progress-dots">
+          <div class="progress-dot done"></div>
+          <div class="progress-dot done"></div>
+          <div class="progress-dot done"></div>
+          <div class="progress-dot done"></div>
+          <div class="progress-dot active"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="block-num">Bloco 5 · 5 perguntas</div>
+        <div class="block-title">Prosperidade e Leis</div>
+        <p class="block-sub">O que você planta com constância é o que cresce. Onde está seu investimento real?</p>
+        <div class="block-divider"></div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">21</span>
+            <span class="field-text">Você tem controle real do que entra e do que sai — ou só uma ideia aproximada?</span>
+          </div>
+          <textarea id="q21" name="q21" placeholder="Descreva sua relação atual com finanças..."></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">22</span>
+            <span class="field-text">Você planta com constância ou só quando está motivada?</span>
+          </div>
+          <textarea id="q22" name="q22" placeholder="Como é sua consistência na prática?"></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">23</span>
+            <span class="field-text">Existe algo que consome seu tempo, dinheiro ou energia sem retorno real?</span>
+          </div>
+          <textarea id="q23" name="q23" placeholder="O que você já sabe que precisa cortar?"></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">24</span>
+            <span class="field-text">Você já perdeu uma oportunidade por falta de preparo ou por medo?</span>
+          </div>
+          <textarea id="q24" name="q24" placeholder="Qual foi? O que aprendeu?"></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-num">25</span>
+            <span class="field-text">O que você faria diferente se soubesse que ia funcionar?</span>
+          </div>
+          <textarea id="q25" name="q25" placeholder="Essa é a sua resposta mais importante. Escreva com tudo..."></textarea>
+        </div>
+
+        <div class="pull-quote">
+          <p>"Honra ao Senhor com os teus bens e com as primícias de todos os teus frutos; e se encherão os teus celeiros."</p>
+          <cite>Provérbios 3:9-10</cite>
+        </div>
+
+        <div class="movimento">
+          <span class="movimento-icon">⚡</span>
+          <div>
+            <strong>Movimento 7 dias</strong>
+            <p>Mapeia o que plantou nos últimos 30 dias em dinheiro, tempo e energia. O que está crescendo? O que está desaparecendo?</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="error-msg" id="error-submit">Ocorreu um erro ao enviar. Por favor, tente novamente.</div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goPrev(5)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Voltar
+        </button>
+        <button class="btn btn-primary btn-submit" id="btn-submit" onclick="submitForm()">
+          <span id="btn-submit-text">Enviar meu diagnóstico</span>
+          <div class="spinner" id="submit-spinner"></div>
+          <svg id="btn-submit-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         SUCCESS SCREEN
+    ══════════════════════════════════════════════════ -->
+    <div class="step" id="step-success">
+      <div class="card">
+        <div class="success-screen" style="display:block;">
+          <div class="success-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <h2 class="success-title">Diagnóstico <em>recebido</em></h2>
+          <p class="success-desc">
+            Suas respostas foram registradas com segurança.
+            A equipe do  Ap. Sandro Lopez vai analisar cada bloco com cuidado e entrar em contato
+            em breve com os próximos passos.
+          </p>
+          <div class="success-verse">
+            <p>"Porque qual é o homem que pensa em seu coração, tal é ele."</p>
+            <cite>Provérbios 23:7</cite>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <p>
+          <a href="index.html">← Voltar para a página principal</a>
+          &nbsp;·&nbsp;
+          Diagnóstico 5D &copy; 2026 Sandro Lopez
+        </p>
+      </div>
+    </div>
+
+  </div><!-- /page -->
+
+  <!-- Modal — rascunho encontrado no banco -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-icon">📋</div>
+      <h2 class="modal-title" id="modal-title">Encontramos seu diagnóstico</h2>
+      <p class="modal-desc" id="modal-desc">
+        Existe um diagnóstico em andamento para este WhatsApp.<br>
+        Quer continuar de onde parou?
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="modal-btn-continue" onclick="modalContinue()">
+          Continuar de onde parei
+        </button>
+        <button class="btn btn-ghost" onclick="modalRestart()">
+          Começar do zero
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const LS_KEY = 'diagnostico5d_rascunho';
+    let currentStep   = 0;
+    let diagnosticoId = null;
+
+    const BLOCK_NAMES = ['', 'Identidade e Posição', 'Governo Interior',
+                         'Preparação e Processo', 'Fé, Ação e Aliança', 'Prosperidade e Leis'];
+
+    // ─── Init on load ─────────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+      initMask();
+      checkSavedSession();
+    });
+
+    // ─── localStorage helpers ─────────────────────────
+    function getSaved() {
+      try { return JSON.parse(localStorage.getItem(LS_KEY) || 'null'); }
+      catch (_) { return null; }
+    }
+
+    function saveLocal(step) {
+      const data = collectFormData();
+      data.currentStep   = step;
+      data.diagnosticoId = diagnosticoId;
+      data.savedAt       = new Date().toISOString();
+      try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch (_) {}
+    }
+
+    // ─── Session restore ──────────────────────────────
+    function checkSavedSession() {
+      const saved = getSaved();
+      if (!saved || !saved.nome || saved.currentStep < 1) return;
+
+      const bloco = BLOCK_NAMES[saved.currentStep] || ('Bloco ' + saved.currentStep);
+      document.getElementById('restore-desc').textContent =
+        `"${saved.nome}" — parou no ${bloco}. Quer continuar?`;
+      document.getElementById('restore-banner').style.display = 'block';
+
+      // Pre-fill form silently
+      fillForm(saved);
+    }
+
+    function fillForm(data) {
+      if (data.nome)     document.getElementById('nome').value = data.nome;
+      if (data.whatsapp) document.getElementById('whatsapp').value = data.whatsapp;
+      for (let i = 1; i <= 25; i++) {
+        const el = document.getElementById('q' + i);
+        if (el && data['q' + i]) el.value = data['q' + i];
+      }
+      if (data.diagnosticoId) diagnosticoId = data.diagnosticoId;
+    }
+
+    function restoreSession() {
+      const saved = getSaved();
+      if (!saved) return;
+      fillForm(saved);
+      document.getElementById('restore-banner').style.display = 'none';
+      showStep(saved.currentStep);
+    }
+
+    function clearSession() {
+      localStorage.removeItem(LS_KEY);
+      diagnosticoId = null;
+      document.getElementById('restore-banner').style.display = 'none';
+      document.getElementById('nome').value = '';
+      document.getElementById('whatsapp').value = '';
+      for (let i = 1; i <= 25; i++) {
+        const el = document.getElementById('q' + i);
+        if (el) el.value = '';
+      }
+      showStep(0);
+    }
+
+    // Save to localStorage when tab is closed
+    window.addEventListener('beforeunload', () => {
+      if (currentStep > 0) saveLocal(currentStep);
+    });
+
+    // ─── Collect all form data ────────────────────────
+    function collectFormData() {
+      const data = {
+        nome:     document.getElementById('nome').value.trim(),
+        whatsapp: document.getElementById('whatsapp').value.trim(),
+      };
+      for (let i = 1; i <= 25; i++) {
+        const el = document.getElementById('q' + i);
+        data['q' + i] = el ? el.value.trim() : '';
+      }
+      return data;
+    }
+
+    // ─── Partial save to backend (fire & forget) ──────
+    function saveParcial(nextStep) {
+      const payload = collectFormData();
+      if (!payload.nome) return; // need at least a name
+
+      payload.status       = 'parcial';
+      payload.ultimo_bloco = nextStep;
+
+      // Always persist locally first (synchronous)
+      const lsData = { ...payload, currentStep: nextStep, diagnosticoId, savedAt: new Date().toISOString() };
+      try { localStorage.setItem(LS_KEY, JSON.stringify(lsData)); } catch (_) {}
+
+      if (diagnosticoId) {
+        // Update existing record
+        fetch(`/api/diagnostico/${diagnosticoId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          keepalive: true,
+        }).catch(() => {});
+      } else {
+        // Create new record and store the returned ID
+        fetch('/api/diagnostico', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          keepalive: true,
+        })
+        .then(r => r.json())
+        .then(json => {
+          if (json.id) {
+            diagnosticoId = json.id;
+            // Re-save localStorage with the new ID
+            const updated = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+            updated.diagnosticoId = diagnosticoId;
+            localStorage.setItem(LS_KEY, JSON.stringify(updated));
+          }
+        })
+        .catch(() => {});
+      }
+    }
+
+    // ─── Modal state ──────────────────────────────────
+    let _pendingRecord = null; // backend record found by WhatsApp lookup
+
+    function openModal(record) {
+      _pendingRecord = record;
+      const bloco = BLOCK_NAMES[record.ultimo_bloco] || ('Bloco ' + record.ultimo_bloco);
+      document.getElementById('modal-desc').innerHTML =
+        `Encontramos o diagnóstico de <strong>${record.nome}</strong> parado no <strong>${bloco}</strong>.<br>Quer continuar de onde parou?`;
+      document.getElementById('modal-overlay').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.remove('open');
+      _pendingRecord = null;
+    }
+
+    function modalContinue() {
+      if (!_pendingRecord) return;
+      // Fill form from backend record
+      fillForm(_pendingRecord);
+      diagnosticoId = _pendingRecord.id;
+      // Also save to localStorage so it persists on this device too
+      const lsData = { ...collectFormData(), currentStep: _pendingRecord.ultimo_bloco,
+                       diagnosticoId, savedAt: new Date().toISOString() };
+      try { localStorage.setItem(LS_KEY, JSON.stringify(lsData)); } catch (_) {}
+      closeModal();
+      showStep(_pendingRecord.ultimo_bloco);
+    }
+
+    function modalRestart() {
+      // Discard the found record — proceed as a new submission
+      closeModal();
+      saveParcial(1);
+      showStep(1);
+    }
+
+    // Close modal on overlay click
+    document.getElementById('modal-overlay').addEventListener('click', function (e) {
+      if (e.target === this) closeModal();
+    });
+
+    // ─── Step navigation ──────────────────────────────
+    function showStep(n) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step-' + n).classList.add('active');
+      currentStep = n;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function goNext(from) {
+      if (from === 0) {
+        const nome = document.getElementById('nome').value.trim();
+        const err  = document.getElementById('error-0');
+        if (!nome) {
+          err.style.display = 'block';
+          document.getElementById('nome').focus();
+          return;
+        }
+        err.style.display = 'none';
+
+        // ── WhatsApp lookup ──────────────────────────
+        const wpp = document.getElementById('whatsapp').value.trim();
+        if (wpp && !diagnosticoId) {
+          const btn = document.querySelector('#step-0 .btn-primary');
+          btn.classList.add('btn-loading');
+          try {
+            const res  = await fetch('/api/diagnostico/lookup?whatsapp=' + encodeURIComponent(wpp));
+            const data = await res.json();
+            if (data.found) {
+              btn.classList.remove('btn-loading');
+              openModal(data.record);
+              return; // wait for modal choice
+            }
+          } catch (_) { /* silently ignore — proceed normally */ }
+          btn.classList.remove('btn-loading');
+        }
+      }
+      saveParcial(from + 1);
+      showStep(from + 1);
+    }
+
+    function goPrev(from) {
+      saveLocal(from - 1);
+      showStep(from - 1);
+    }
+
+    // ─── Final submit ─────────────────────────────────
+    async function submitForm() {
+      const btn     = document.getElementById('btn-submit');
+      const spinner = document.getElementById('submit-spinner');
+      const btnText = document.getElementById('btn-submit-text');
+      const btnIcon = document.getElementById('btn-submit-icon');
+      const errMsg  = document.getElementById('error-submit');
+
+      btn.disabled          = true;
+      spinner.style.display = 'block';
+      btnIcon.style.display = 'none';
+      btnText.textContent   = 'Enviando...';
+      errMsg.classList.remove('show');
+
+      const payload = collectFormData();
+      payload.status       = 'completo';
+      payload.ultimo_bloco = 5;
+
+      try {
+        let res;
+        if (diagnosticoId) {
+          res = await fetch(`/api/diagnostico/${diagnosticoId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+        } else {
+          res = await fetch('/api/diagnostico', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+        }
+
+        if (!res.ok) throw new Error('Server error');
+
+        localStorage.removeItem(LS_KEY);
+        showStep('success');
+      } catch (e) {
+        errMsg.classList.add('show');
+        btn.disabled          = false;
+        spinner.style.display = 'none';
+        btnIcon.style.display = '';
+        btnText.textContent   = 'Enviar meu diagnóstico';
+      }
+    }
+
+    // ─── WhatsApp mask ────────────────────────────────
+    function initMask() {
+      const input = document.getElementById('whatsapp');
+      input.addEventListener('input', function () {
+        let v = this.value.replace(/\D/g, '').slice(0, 11);
+        if (!v.length) { this.value = ''; return; }
+        let out = '(' + v.slice(0, 2);
+        if (v.length > 2) out += ') ' + v.slice(2, v.length <= 10 ? 6 : 7);
+        if (v.length > 6) out += '-' + v.slice(v.length <= 10 ? 6 : 7);
+        this.value = out;
+      });
+      input.addEventListener('keydown', function (e) {
+        const ok = ['Backspace','Delete','Tab','Escape','Enter','Home','End',
+                    'ArrowLeft','ArrowRight','ArrowUp','ArrowDown'];
+        if (ok.includes(e.key) || e.ctrlKey || e.metaKey) return;
+        if (!/^\d$/.test(e.key)) e.preventDefault();
+      });
+    }
+  </script>
+
+</body>
+</html>

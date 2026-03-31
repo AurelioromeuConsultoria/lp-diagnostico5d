@@ -1,0 +1,112 @@
+using Diagnostico5D.API.DTOs;
+using Diagnostico5D.API.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Diagnostico5D.API.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class DiagnosticoController(ISubmissionService service) : ControllerBase
+{
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var submissions = await service.GetAllAsync();
+        return Ok(submissions);
+    }
+
+    [HttpGet("lookup")]
+    public async Task<IActionResult> Lookup([FromQuery] string whatsapp)
+    {
+        if (string.IsNullOrWhiteSpace(whatsapp))
+            return BadRequest(new { error = "WhatsApp obrigatório." });
+
+        var result = await service.LookupByWhatsappAsync(whatsapp);
+        return Ok(result);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var submission = await service.GetByIdAsync(id);
+        if (submission is null) return NotFound(new { error = "Não encontrado." });
+        return Ok(submission);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateSubmissionRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Nome))
+            return BadRequest(new { error = "Nome é obrigatório." });
+
+        var result = await service.CreateAsync(request);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateSubmissionRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Nome))
+            return BadRequest(new { error = "Nome é obrigatório." });
+
+        var updated = await service.UpdateAsync(id, request);
+        if (!updated) return NotFound(new { error = "Não encontrado." });
+
+        return Ok(new UpdateResponse(true));
+    }
+
+    [HttpPut("{id:int}/bloco6")]
+    public async Task<IActionResult> UpdateBloco6(int id, [FromBody] Bloco6Request request)
+    {
+        var updated = await service.UpdateBloco6Async(id, request);
+        if (!updated) return NotFound(new { error = "Não encontrado." });
+
+        return Ok(new UpdateResponse(true));
+    }
+
+    [HttpDelete("{id:int}")]
+    [Authorize]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var deleted = await service.DeleteAsync(id);
+        if (!deleted) return NotFound(new { error = "Não encontrado." });
+
+        return Ok(new UpdateResponse(true));
+    }
+
+    [HttpPatch("{id:int}/cadastro")]
+    [Authorize]
+    public async Task<IActionResult> EditarCadastro(int id, [FromBody] EditarCadastroRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Nome))
+            return BadRequest(new { error = "Nome é obrigatório." });
+
+        var updated = await service.EditarCadastroAsync(id, request);
+        if (!updated) return NotFound(new { error = "Não encontrado." });
+
+        return Ok(new UpdateResponse(true));
+    }
+
+    [HttpPut("{id:int}/mentor")]
+    [Authorize]
+    public async Task<IActionResult> UpdateMentor(int id, [FromBody] MentorRequest request)
+    {
+        var updated = await service.UpdateMentorAsync(id, request);
+        if (!updated) return NotFound(new { error = "Não encontrado." });
+
+        return Ok(new UpdateResponse(true));
+    }
+
+    [HttpPost("{id:int}/whatsapp/reenviar")]
+    [Authorize]
+    public async Task<IActionResult> ReenviarWhatsapp(int id)
+    {
+        var resultado = await service.ReenviarWhatsappAsync(id);
+
+        if (!resultado.Sucesso)
+            return BadRequest(new { error = resultado.MensagemErro });
+
+        return Ok(new { success = true, messageId = resultado.MessageId });
+    }
+}
