@@ -106,6 +106,7 @@ using (var scope = app.Services.CreateScope())
         "ALTER TABLE Submissions ADD COLUMN WhatsappEnviadoEm TEXT NULL",
         "ALTER TABLE Submissions ADD COLUMN MentorRevisado INTEGER NOT NULL DEFAULT 0",
         "ALTER TABLE Submissions ADD COLUMN MentorObservacao TEXT NULL",
+        "ALTER TABLE Submissions ADD COLUMN Fase TEXT NOT NULL DEFAULT 'novo'",
     };
     foreach (var sql in novasColunas)
     {

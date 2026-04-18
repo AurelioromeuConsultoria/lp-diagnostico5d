@@ -109,6 +109,148 @@ function exportarCSV(dados) {
   URL.revokeObjectURL(url);
 }
 
+// ─── Export helpers ──────────────────────────────────────────────────────────
+
+const STATUS_EMOJI = { ok: '✅', atencao: '⚠️', critico: '❌' };
+const AREAS_B6_LABELS = {
+  b6Identidade:   'Identidade e Posição',
+  b6Governo:      'Governo Interior',
+  b6Preparacao:   'Preparação e Processo',
+  b6FeAcao:       'Fé, Ação e Aliança',
+  b6Prosperidade: 'Prosperidade e Leis',
+};
+
+function gerarTXT(d) {
+  const sep  = '═'.repeat(60);
+  const sep2 = '─'.repeat(60);
+  const linhas = [];
+
+  linhas.push(sep);
+  linhas.push('DIAGNÓSTICO 5D — RELATÓRIO COMPLETO');
+  linhas.push(sep);
+  linhas.push(`Nome:     ${d.nome}`);
+  linhas.push(`WhatsApp: ${d.whatsapp || '—'}`);
+  linhas.push(`Cadastro: ${fmtDate(d.createdAt)}`);
+  linhas.push(`Status:   ${d.status === 'completo' ? 'Completo' : 'Em andamento'} (bloco ${d.ultimoBloco}/5)`);
+  linhas.push('');
+
+  BLOCOS.forEach(bloco => {
+    linhas.push(sep2);
+    linhas.push(bloco.label.toUpperCase());
+    linhas.push(sep2);
+    bloco.qs.forEach(n => {
+      const resp = (d[`q${n}`] || '').trim();
+      linhas.push(`${n}. ${QUESTIONS[n]}`);
+      linhas.push(`   → ${resp || '(não respondida)'}`);
+      linhas.push('');
+    });
+  });
+
+  // Bloco 6
+  const temB6 = d.b6Gargalo || d.b6ErroInvisivel || d.b6ProximoMovimento ||
+    Object.keys(AREAS_B6_LABELS).some(k => d[`${k}Status`] || d[`${k}Quebra`]);
+
+  if (temB6) {
+    linhas.push(sep2);
+    linhas.push('BLOCO 6 — DIAGNÓSTICO FINAL (MENTOR)');
+    linhas.push(sep2);
+    Object.entries(AREAS_B6_LABELS).forEach(([key, label]) => {
+      const status = d[`${key}Status`];
+      const quebra = d[`${key}Quebra`];
+      if (status || quebra) {
+        const emoji = STATUS_EMOJI[status] || '—';
+        linhas.push(`${label}: ${emoji}`);
+        if (quebra) linhas.push(`   Quebra: ${quebra}`);
+        linhas.push('');
+      }
+    });
+    if (d.b6Gargalo)          linhas.push(`Gargalo principal:\n   ${d.b6Gargalo}\n`);
+    if (d.b6ErroInvisivel)    linhas.push(`Erro invisível:\n   ${d.b6ErroInvisivel}\n`);
+    if (d.b6ProximoMovimento) linhas.push(`Próximo movimento:\n   ${d.b6ProximoMovimento}\n`);
+  }
+
+  if (d.mentorObservacao) {
+    linhas.push(sep2);
+    linhas.push('OBSERVAÇÃO INTERNA');
+    linhas.push(sep2);
+    linhas.push(d.mentorObservacao);
+    linhas.push('');
+  }
+
+  linhas.push(sep);
+  linhas.push(`Gerado em ${new Date().toLocaleString('pt-BR')}`);
+  linhas.push(sep);
+
+  return linhas.join('\n');
+}
+
+function baixarTXT(d) {
+  const txt  = gerarTXT(d);
+  const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `diagnostico-${d.nome.replace(/\s+/g, '-').toLowerCase()}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function abrirPDF(d) {
+  const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const blocoHTML = BLOCOS.map(bloco => `
+    <h3>${esc(bloco.label)}</h3>
+    ${bloco.qs.map(n => `
+      <div class="qa">
+        <div class="q">${n}. ${esc(QUESTIONS[n])}</div>
+        <div class="a">${esc(d[`q${n}`]) || '<em>Não respondida</em>'}</div>
+      </div>`).join('')}`).join('');
+
+  const b6HTML = (() => {
+    const temB6 = d.b6Gargalo || d.b6ErroInvisivel || d.b6ProximoMovimento ||
+      Object.keys(AREAS_B6_LABELS).some(k => d[`${k}Status`] || d[`${k}Quebra`]);
+    if (!temB6) return '';
+    const areas = Object.entries(AREAS_B6_LABELS).filter(([k]) => d[`${k}Status`] || d[`${k}Quebra`])
+      .map(([k, label]) => `
+        <div class="qa">
+          <div class="q">${esc(label)}: ${STATUS_EMOJI[d[`${k}Status`]] || '—'}</div>
+          ${d[`${k}Quebra`] ? `<div class="a">${esc(d[`${k}Quebra`])}</div>` : ''}
+        </div>`).join('');
+    return `<h3>Bloco 6 — Diagnóstico Final</h3>${areas}
+      ${d.b6Gargalo ? `<div class="qa"><div class="q">Gargalo principal</div><div class="a">${esc(d.b6Gargalo)}</div></div>` : ''}
+      ${d.b6ErroInvisivel ? `<div class="qa"><div class="q">Erro invisível</div><div class="a">${esc(d.b6ErroInvisivel)}</div></div>` : ''}
+      ${d.b6ProximoMovimento ? `<div class="qa"><div class="q">Próximo movimento</div><div class="a">${esc(d.b6ProximoMovimento)}</div></div>` : ''}`;
+  })();
+
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
+  <title>Diagnóstico 5D — ${esc(d.nome)}</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 760px; margin: 40px auto; color: #180E06; font-size: 14px; line-height: 1.7; }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    .meta { color: #666; font-size: 13px; margin-bottom: 32px; border-bottom: 2px solid #C94B00; padding-bottom: 12px; }
+    h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .12em; color: #C94B00; border-bottom: 1px solid #f0d8c8; padding-bottom: 4px; margin: 28px 0 12px; }
+    .qa { margin-bottom: 14px; }
+    .q { font-weight: bold; font-size: 13px; color: #444; }
+    .a { margin-top: 4px; padding-left: 12px; border-left: 3px solid #f0d8c8; white-space: pre-wrap; }
+    .footer { margin-top: 40px; font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 8px; }
+    @media print { body { margin: 20px; } }
+  </style></head><body>
+  <h1>Diagnóstico 5D — ${esc(d.nome)}</h1>
+  <div class="meta">
+    WhatsApp: ${esc(d.whatsapp) || '—'} &nbsp;·&nbsp;
+    Cadastro: ${fmtDate(d.createdAt)} &nbsp;·&nbsp;
+    Status: ${d.status === 'completo' ? 'Completo' : 'Em andamento'}
+  </div>
+  ${blocoHTML}
+  ${b6HTML}
+  <div class="footer">Gerado em ${new Date().toLocaleString('pt-BR')} · Diagnóstico 5D</div>
+  <script>window.onload = () => { window.print(); }<\/script>
+  </body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+}
+
 // ─── StatCard ────────────────────────────────────────────────────────────────
 
 function StatCard({ num, label, sub }) {
@@ -336,9 +478,8 @@ function SubmissionCard({ d, onRefresh }) {
           <div className="flex items-center gap-2 shrink-0">
             {/* WA enviado */}
             {d.whatsappEnviado && (
-              <span title={`Enviado em ${fmtDate(d.whatsappEnviadoEm)}`}
-                className="text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-400 px-2 py-0.5 rounded-full">
-                WA ✓
+              <span title={`WhatsApp enviado em ${fmtDate(d.whatsappEnviadoEm)}`}>
+                <MessageCircle className="h-4 w-4 text-green-500" />
               </span>
             )}
 
@@ -405,6 +546,16 @@ function SubmissionCard({ d, onRefresh }) {
         {/* Expanded body */}
         {open && (
           <div className="border-t border-border px-5 pt-5 pb-7 space-y-7">
+
+            {/* Exportar */}
+            <div className="flex gap-2 justify-end">
+              <Button size="sm" variant="outline" onClick={() => baixarTXT(d)}>
+                <Download className="h-3.5 w-3.5 mr-1.5" /> Exportar TXT
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => abrirPDF(d)}>
+                <Download className="h-3.5 w-3.5 mr-1.5" /> Exportar PDF
+              </Button>
+            </div>
 
             {/* Meta detalhes */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
@@ -482,24 +633,21 @@ function SubmissionCard({ d, onRefresh }) {
                         <td className="py-3 pr-4 align-top pt-4">
                           <div className="flex gap-1.5">
                             {Object.entries(statusEmoji).map(([val, emoji]) => (
-                              <label key={val} className={cn(
-                                'w-9 h-9 rounded-lg border-2 flex items-center justify-center cursor-pointer text-base transition-all',
-                                b6[`${area.key}Status`] === val
-                                  ? val === 'ok' ? 'border-green-600 bg-green-50 dark:bg-green-950/40'
-                                  : val === 'atencao' ? 'border-yellow-600 bg-yellow-50 dark:bg-yellow-950/40'
-                                  : 'border-red-600 bg-red-50 dark:bg-red-950/40'
-                                  : 'border-border bg-background hover:border-muted-foreground'
-                              )}>
-                                <input
-                                  type="radio"
-                                  className="sr-only"
-                                  name={`${d.id}_${area.key}`}
-                                  value={val}
-                                  checked={b6[`${area.key}Status`] === val}
-                                  onChange={() => setB6Field(`${area.key}Status`, val)}
-                                />
+                              <button
+                                key={val}
+                                type="button"
+                                onClick={() => setB6Field(`${area.key}Status`, val)}
+                                className={cn(
+                                  'w-9 h-9 rounded-lg border-2 flex items-center justify-center text-base transition-all',
+                                  b6[`${area.key}Status`] === val
+                                    ? val === 'ok'      ? 'border-green-600 bg-green-50 dark:bg-green-950/40'
+                                    : val === 'atencao' ? 'border-yellow-600 bg-yellow-50 dark:bg-yellow-950/40'
+                                    : 'border-red-600 bg-red-50 dark:bg-red-950/40'
+                                    : 'border-border bg-background hover:border-muted-foreground'
+                                )}
+                              >
                                 {emoji}
-                              </label>
+                              </button>
                             ))}
                           </div>
                         </td>

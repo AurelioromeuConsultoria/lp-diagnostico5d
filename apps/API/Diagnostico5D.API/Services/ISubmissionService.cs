@@ -14,4 +14,6 @@ public interface ISubmissionService
     Task<bool> EditarCadastroAsync(int id, EditarCadastroRequest request);
     Task<bool> UpdateMentorAsync(int id, MentorRequest request);
     Task<EvolutionApiResult> ReenviarWhatsappAsync(int id);
+    Task<bool> UpdateFaseAsync(int id, string fase);
+    Task<CreateResponse> CriarConvidadoAsync(CriarConvidadoRequest request);
 }

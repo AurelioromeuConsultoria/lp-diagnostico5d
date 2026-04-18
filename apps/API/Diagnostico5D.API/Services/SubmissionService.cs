@@ -6,7 +6,11 @@ using System.Text.RegularExpressions;
 
 namespace Diagnostico5D.API.Services;
 
-public class SubmissionService(AppDbContext db, IEvolutionApiService evolutionApi, ILogger<SubmissionService> logger) : ISubmissionService
+public class SubmissionService(
+    AppDbContext db,
+    IEvolutionApiService evolutionApi,
+    ILogger<SubmissionService> logger,
+    IConfiguration configuration) : ISubmissionService
 {
     public async Task<IEnumerable<SubmissionDto>> GetAllAsync()
     {
@@ -27,12 +31,12 @@ public class SubmissionService(AppDbContext db, IEvolutionApiService evolutionAp
     {
         var digits = Regex.Replace(whatsapp, @"\D", "");
 
-        var submission = await db.Submissions
+        var submissions = await db.Submissions
             .Where(s => s.Status == "parcial")
             .OrderByDescending(s => s.UpdatedAt)
             .ToListAsync();
 
-        var match = submission.FirstOrDefault(s =>
+        var match = submissions.FirstOrDefault(s =>
             Regex.Replace(s.Whatsapp ?? "", @"\D", "") == digits);
 
         if (match is null)
@@ -49,6 +53,7 @@ public class SubmissionService(AppDbContext db, IEvolutionApiService evolutionAp
             Whatsapp    = req.Whatsapp?.Trim(),
             Status      = req.Status,
             UltimoBloco = req.UltimoBloco,
+            Fase        = "em_preenchimento",
             CreatedAt   = DateTime.Now,
             UpdatedAt   = DateTime.Now,
             Q1 = req.Q1,  Q2 = req.Q2,  Q3 = req.Q3,  Q4 = req.Q4,  Q5 = req.Q5,
@@ -85,12 +90,20 @@ public class SubmissionService(AppDbContext db, IEvolutionApiService evolutionAp
         submission.Q22 = req.Q22;submission.Q23 = req.Q23;submission.Q24 = req.Q24;
         submission.Q25 = req.Q25;
 
+        // Transições automáticas de fase
+        if (req.UltimoBloco > 0 &&
+            submission.Fase is "novo" or "convite_enviado" or null)
+            submission.Fase = "em_preenchimento";
+
         if (req.Status == "completo" && eraParicial)
+        {
             submission.ConcluidoEm = DateTime.Now;
+            submission.Fase = "aguardando_analise";
+        }
 
         await db.SaveChangesAsync();
 
-        // Envia mensagem WhatsApp quando finaliza
+        // Envia WhatsApp de confirmação quando finaliza
         if (req.Status == "completo" && eraParicial && !string.IsNullOrWhiteSpace(submission.Whatsapp))
         {
             var resultado = await EnviarMensagemConfirmacaoAsync(submission);
@@ -124,6 +137,10 @@ public class SubmissionService(AppDbContext db, IEvolutionApiService evolutionAp
         submission.B6ErroInvisivel      = req.B6ErroInvisivel;
         submission.B6ProximoMovimento   = req.B6ProximoMovimento;
         submission.UpdatedAt            = DateTime.Now;
+
+        // Transição automática: bloco6 preenchido → diagnosticado
+        if (!string.IsNullOrWhiteSpace(req.B6Gargalo) && submission.Fase != "concluido")
+            submission.Fase = "diagnosticado";
 
         await db.SaveChangesAsync();
         return true;
@@ -161,6 +178,12 @@ public class SubmissionService(AppDbContext db, IEvolutionApiService evolutionAp
         submission.MentorObservacao = req.Observacao;
         submission.UpdatedAt        = DateTime.Now;
 
+        // Transição automática: revisado → concluido / desmarcado → diagnosticado
+        if (req.Revisado)
+            submission.Fase = "concluido";
+        else if (submission.Fase == "concluido")
+            submission.Fase = "diagnosticado";
+
         await db.SaveChangesAsync();
         return true;
     }
@@ -185,6 +208,73 @@ public class SubmissionService(AppDbContext db, IEvolutionApiService evolutionAp
         }
 
         return resultado;
+    }
+
+    public async Task<bool> UpdateFaseAsync(int id, string fase)
+    {
+        var submission = await db.Submissions.FindAsync(id);
+        if (submission is null) return false;
+
+        submission.Fase      = fase;
+        submission.UpdatedAt = DateTime.Now;
+
+        // Sincroniza mentorRevisado com fase concluido
+        if (fase == "concluido")
+            submission.MentorRevisado = true;
+        else if (submission.MentorRevisado && fase != "concluido")
+            submission.MentorRevisado = false;
+
+        await db.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<CreateResponse> CriarConvidadoAsync(CriarConvidadoRequest req)
+    {
+        var submission = new Submission
+        {
+            Nome        = req.Nome.Trim(),
+            Whatsapp    = req.Whatsapp?.Trim(),
+            Status      = "parcial",
+            UltimoBloco = 0,
+            Fase        = "novo",
+            CreatedAt   = DateTime.Now,
+            UpdatedAt   = DateTime.Now,
+        };
+
+        db.Submissions.Add(submission);
+        await db.SaveChangesAsync();
+
+        // Envia WhatsApp com o link do formulário
+        if (!string.IsNullOrWhiteSpace(submission.Whatsapp))
+        {
+            var appUrl = configuration["AppUrl"]?.TrimEnd('/') ?? "https://diagnostico5d.com.br";
+            var link   = $"{appUrl}/diagnostico.html?wpp={Uri.EscapeDataString(submission.Whatsapp)}";
+            var primeiroNome = submission.Nome.Split(' ')[0];
+
+            var mensagem =
+                $"Olá, {primeiroNome}! 🙌\n\n" +
+                $"Seu *Diagnóstico 5D* está disponível para ser preenchido.\n\n" +
+                $"Preencha com muita atenção!\n\n" +
+                $"Acesse o link abaixo e responda as perguntas no seu tempo:\n" +
+                $"{link}\n\n" +
+                $"Qualquer dúvida, estamos aqui. 😊";
+
+            var resultado = await evolutionApi.EnviarMensagemTextoAsync(submission.Whatsapp, mensagem);
+
+            if (resultado.Sucesso)
+            {
+                submission.Fase            = "convite_enviado";
+                submission.WhatsappEnviado = true;
+                submission.WhatsappEnviadoEm = DateTime.Now;
+                await db.SaveChangesAsync();
+            }
+            else
+            {
+                logger.LogWarning("Falha ao enviar convite para {Whatsapp}: {Erro}", submission.Whatsapp, resultado.MensagemErro);
+            }
+        }
+
+        return new CreateResponse(true, submission.Id);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
@@ -220,6 +310,7 @@ public class SubmissionService(AppDbContext db, IEvolutionApiService evolutionAp
         s.B6ProsperidadeStatus, s.B6ProsperidadeQuebra,
         s.B6Gargalo, s.B6ErroInvisivel, s.B6ProximoMovimento,
         s.WhatsappEnviado, s.WhatsappEnviadoEm,
-        s.MentorRevisado, s.MentorObservacao
+        s.MentorRevisado, s.MentorObservacao,
+        s.Fase ?? "novo"
     );
 }

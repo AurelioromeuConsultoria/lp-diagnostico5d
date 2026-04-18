@@ -109,4 +109,28 @@ public class DiagnosticoController(ISubmissionService service) : ControllerBase
 
         return Ok(new { success = true, messageId = resultado.MessageId });
     }
+
+    [HttpPatch("{id:int}/fase")]
+    [Authorize]
+    public async Task<IActionResult> UpdateFase(int id, [FromBody] FaseRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Fase))
+            return BadRequest(new { error = "Fase obrigatória." });
+
+        var updated = await service.UpdateFaseAsync(id, request.Fase);
+        if (!updated) return NotFound(new { error = "Não encontrado." });
+
+        return Ok(new UpdateResponse(true));
+    }
+
+    [HttpPost("convidado")]
+    [Authorize]
+    public async Task<IActionResult> CriarConvidado([FromBody] CriarConvidadoRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Nome))
+            return BadRequest(new { error = "Nome é obrigatório." });
+
+        var result = await service.CriarConvidadoAsync(request);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+    }
 }

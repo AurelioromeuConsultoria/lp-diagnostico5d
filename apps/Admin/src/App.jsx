@@ -7,6 +7,7 @@ import { Layout } from './components/Layout/Layout';
 import Login from './pages/Login/Login';
 
 const DiagnosticosPage = lazy(() => import('./pages/Diagnosticos/index'));
+const KanbanPage       = lazy(() => import('./pages/Kanban/index'));
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
               >
                 <Route index element={<Navigate to="/diagnosticos" replace />} />
                 <Route path="diagnosticos" element={<DiagnosticosPage />} />
+                <Route path="kanban"       element={<KanbanPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/diagnosticos" replace />} />
             </Routes>

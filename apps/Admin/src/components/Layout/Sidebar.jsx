@@ -1,13 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
-import { ClipboardList, ChevronsUpDown } from 'lucide-react';
+import { ClipboardList, Kanban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const menuItems = [
-  {
-    title: 'Diagnósticos',
-    href: '/diagnosticos',
-    icon: ClipboardList,
-  },
+  { title: 'Diagnósticos', href: '/diagnosticos', icon: ClipboardList },
+  { title: 'Kanban',       href: '/kanban',        icon: Kanban },
 ];
 
 export function Sidebar() {

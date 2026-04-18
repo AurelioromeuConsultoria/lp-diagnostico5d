@@ -1,3 +1,17 @@
+# Node
 node_modules/
-diagnostico.db
 npm-debug.log*
+.DS_Store
+apps/.DS_Store
+
+# .NET build artifacts
+apps/API/**/bin/
+apps/API/**/obj/
+
+# SQLite databases
+*.db
+*.db-shm
+*.db-wal
+
+# Vite build output (gerado no CI)
+apps/Admin/dist/

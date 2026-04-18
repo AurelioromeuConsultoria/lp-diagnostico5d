@@ -25,7 +25,8 @@ public record SubmissionDto(
     bool WhatsappEnviado,
     DateTime? WhatsappEnviadoEm,
     bool MentorRevisado,
-    string? MentorObservacao
+    string? MentorObservacao,
+    string Fase
 );
 
 public record CreateSubmissionRequest(
@@ -66,6 +67,10 @@ public record Bloco6Request(
 public record EditarCadastroRequest(string Nome, string? Whatsapp);
 
 public record MentorRequest(bool Revisado, string? Observacao);
+
+public record FaseRequest(string Fase);
+
+public record CriarConvidadoRequest(string Nome, string? Whatsapp);
 
 public record LookupResponse(bool Found, SubmissionDto? Record);
 

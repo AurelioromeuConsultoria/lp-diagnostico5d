@@ -352,6 +352,27 @@
       color: var(--text-3);
       margin-top: -4px;
     }
+    .field-error-highlight {
+      border-color: #e53e3e !important;
+      background: #fff5f5 !important;
+      animation: shake 0.3s ease;
+    }
+    .validation-msg {
+      display: none;
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      color: #c53030;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-4px); }
+      75%      { transform: translateX(4px); }
+    }
 
     /* ─── Buttons ────────────────────────────────────── */
     .btn-row {
@@ -793,6 +814,7 @@
         </div>
       </div>
 
+      <div class="validation-msg" id="validation-1"></div>
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="goPrev(1)">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -885,6 +907,7 @@
         </div>
       </div>
 
+      <div class="validation-msg" id="validation-2"></div>
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="goPrev(2)">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -977,6 +1000,7 @@
         </div>
       </div>
 
+      <div class="validation-msg" id="validation-3"></div>
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="goPrev(3)">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -1069,6 +1093,7 @@
         </div>
       </div>
 
+      <div class="validation-msg" id="validation-4"></div>
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="goPrev(4)">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -1163,6 +1188,7 @@
 
       <div class="error-msg" id="error-submit">Ocorreu um erro ao enviar. Por favor, tente novamente.</div>
 
+      <div class="validation-msg" id="validation-5"></div>
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="goPrev(5)">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -1242,6 +1268,46 @@
     // ─── Init on load ─────────────────────────────────
     window.addEventListener('DOMContentLoaded', () => {
       initMask();
+
+      // Limpa highlight de erro quando o usuário começa a digitar
+      for (let i = 1; i <= 25; i++) {
+        const el = document.getElementById('q' + i);
+        if (el) el.addEventListener('input', () => el.classList.remove('field-error-highlight'));
+      }
+
+      // Handle ?wpp= query param (link enviado pelo admin)
+      const urlWpp = new URLSearchParams(window.location.search).get('wpp');
+      if (urlWpp) {
+        const wppInput = document.getElementById('whatsapp');
+        wppInput.value    = urlWpp;
+        wppInput.readOnly = true;
+        wppInput.style.background = '#f5f5f0';
+
+        // Auto-lookup: skip step 0 if record exists, or jump straight to step 1
+        fetch('/api/diagnostico/lookup?whatsapp=' + encodeURIComponent(urlWpp))
+          .then(r => r.json())
+          .then(data => {
+            if (data.found) {
+              fillForm(data.record);
+              diagnosticoId = data.record.id;
+              const bloco = data.record.ultimoBloco ?? data.record.ultimo_bloco ?? 0;
+              const lsData = { ...collectFormData(),
+                               currentStep: bloco,
+                               diagnosticoId, savedAt: new Date().toISOString() };
+              try { localStorage.setItem(LS_KEY, JSON.stringify(lsData)); } catch (_) {}
+              showStep(bloco > 0 ? bloco : 1);
+            } else {
+              // Novo registro — pular step 0 e ir direto para identificação
+              showStep(1);
+            }
+          })
+          .catch(() => {
+            // Falha na rede — deixa no step 0 normalmente
+          });
+
+        return; // não chamar checkSavedSession quando viemos via link
+      }
+
       checkSavedSession();
     });
 
@@ -1369,7 +1435,8 @@
 
     function openModal(record) {
       _pendingRecord = record;
-      const bloco = BLOCK_NAMES[record.ultimo_bloco] || ('Bloco ' + record.ultimo_bloco);
+      const ub    = record.ultimoBloco ?? record.ultimo_bloco ?? 0;
+      const bloco = BLOCK_NAMES[ub] || ('Bloco ' + ub);
       document.getElementById('modal-desc').innerHTML =
         `Encontramos o diagnóstico de <strong>${record.nome}</strong> parado no <strong>${bloco}</strong>.<br>Quer continuar de onde parou?`;
       document.getElementById('modal-overlay').classList.add('open');
@@ -1385,12 +1452,13 @@
       // Fill form from backend record
       fillForm(_pendingRecord);
       diagnosticoId = _pendingRecord.id;
+      const ub = _pendingRecord.ultimoBloco ?? _pendingRecord.ultimo_bloco ?? 1;
       // Also save to localStorage so it persists on this device too
-      const lsData = { ...collectFormData(), currentStep: _pendingRecord.ultimo_bloco,
+      const lsData = { ...collectFormData(), currentStep: ub,
                        diagnosticoId, savedAt: new Date().toISOString() };
       try { localStorage.setItem(LS_KEY, JSON.stringify(lsData)); } catch (_) {}
       closeModal();
-      showStep(_pendingRecord.ultimo_bloco);
+      showStep(ub);
     }
 
     function modalRestart() {
@@ -1411,6 +1479,30 @@
       document.getElementById('step-' + n).classList.add('active');
       currentStep = n;
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Perguntas por bloco: bloco 1 → Q1-Q5, bloco 2 → Q6-Q10, etc.
+    function validarBloco(step) {
+      if (step < 1 || step > 5) return true;
+      const inicio = (step - 1) * 5 + 1;
+      const vazias = [];
+      for (let i = inicio; i < inicio + 5; i++) {
+        const el = document.getElementById('q' + i);
+        if (!el) continue;
+        const vazio = !el.value.trim();
+        el.classList.toggle('field-error-highlight', vazio);
+        if (vazio) vazias.push(i);
+      }
+      const msgEl = document.getElementById('validation-' + step);
+      if (vazias.length > 0) {
+        const nums = vazias.map(n => `<strong>${n}</strong>`).join(', ');
+        msgEl.innerHTML = `⚠️ Responda ${vazias.length === 1 ? 'a pergunta' : 'as perguntas'} ${nums} antes de continuar.`;
+        msgEl.style.display = 'block';
+        document.getElementById('q' + vazias[0]).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+      msgEl.style.display = 'none';
+      return true;
     }
 
     async function goNext(from) {
@@ -1441,6 +1533,10 @@
           btn.classList.remove('btn-loading');
         }
       }
+
+      // Validar bloco atual antes de avançar
+      if (!validarBloco(from)) return;
+
       saveParcial(from + 1);
       showStep(from + 1);
     }

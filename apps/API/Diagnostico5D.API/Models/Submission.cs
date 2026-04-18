@@ -61,6 +61,9 @@ public class Submission
     public string? B6ErroInvisivel { get; set; }
     public string? B6ProximoMovimento { get; set; }
 
+    // Fase do fluxo Kanban
+    public string Fase { get; set; } = "novo";
+
     // WhatsApp
     public bool WhatsappEnviado { get; set; } = false;
     public DateTime? WhatsappEnviadoEm { get; set; }
