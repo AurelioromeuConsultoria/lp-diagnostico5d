@@ -13,5 +13,8 @@ apps/API/**/obj/
 *.db-shm
 *.db-wal
 
+# Configurações locais com credenciais
+apps/API/**/appsettings.Development.json
+
 # Vite build output (gerado no CI)
 apps/Admin/dist/
