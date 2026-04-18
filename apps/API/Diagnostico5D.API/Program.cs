@@ -128,7 +128,7 @@ app.UseStaticFiles();
 app.UseAuthorization();
 app.MapControllers();
 
-// SPA fallback for admin React app at /admin
-app.MapFallbackToFile("admin/index.html");
+// SPA fallback for admin React app at /admin (scoped to /admin/* only)
+app.MapFallbackToFile("/admin/{**path}", "admin/index.html");
 
 app.Run();
