@@ -123,23 +123,21 @@ public class SubmissionService(
         var submission = await db.Submissions.FindAsync(id);
         if (submission is null) return false;
 
-        submission.B6IdentidadeStatus   = req.B6IdentidadeStatus;
-        submission.B6IdentidadeQuebra   = req.B6IdentidadeQuebra;
-        submission.B6GovernoStatus      = req.B6GovernoStatus;
-        submission.B6GovernoQuebra      = req.B6GovernoQuebra;
-        submission.B6PreparacaoStatus   = req.B6PreparacaoStatus;
-        submission.B6PreparacaoQuebra   = req.B6PreparacaoQuebra;
-        submission.B6FeAcaoStatus       = req.B6FeAcaoStatus;
-        submission.B6FeAcaoQuebra       = req.B6FeAcaoQuebra;
-        submission.B6ProsperidadeStatus = req.B6ProsperidadeStatus;
-        submission.B6ProsperidadeQuebra = req.B6ProsperidadeQuebra;
-        submission.B6Gargalo            = req.B6Gargalo;
-        submission.B6ErroInvisivel      = req.B6ErroInvisivel;
-        submission.B6ProximoMovimento   = req.B6ProximoMovimento;
-        submission.UpdatedAt            = DateTime.Now;
+        submission.B6GovFinanceiroStatus   = req.B6GovFinanceiroStatus;
+        submission.B6GovFinanceiroQuebra   = req.B6GovFinanceiroQuebra;
+        submission.B6IdentidadeAutoStatus  = req.B6IdentidadeAutoStatus;
+        submission.B6IdentidadeAutoQuebra  = req.B6IdentidadeAutoQuebra;
+        submission.B6GovInteriorStatus     = req.B6GovInteriorStatus;
+        submission.B6GovInteriorQuebra     = req.B6GovInteriorQuebra;
+        submission.B6AmbienteStatus        = req.B6AmbienteStatus;
+        submission.B6AmbienteQuebra        = req.B6AmbienteQuebra;
+        submission.B6EspiritualidadeStatus = req.B6EspiritualidadeStatus;
+        submission.B6EspiritualidadeQuebra = req.B6EspiritualidadeQuebra;
+        submission.B6SinteseGeral          = req.B6SinteseGeral;
+        submission.UpdatedAt               = DateTime.Now;
 
         // Transição automática: bloco6 preenchido → diagnosticado
-        if (!string.IsNullOrWhiteSpace(req.B6Gargalo) && submission.Fase != "concluido")
+        if (!string.IsNullOrWhiteSpace(req.B6SinteseGeral) && submission.Fase != "concluido")
             submission.Fase = "diagnosticado";
 
         await db.SaveChangesAsync();
@@ -303,12 +301,12 @@ public class SubmissionService(
         s.Q11, s.Q12, s.Q13, s.Q14, s.Q15,
         s.Q16, s.Q17, s.Q18, s.Q19, s.Q20,
         s.Q21, s.Q22, s.Q23, s.Q24, s.Q25,
-        s.B6IdentidadeStatus,   s.B6IdentidadeQuebra,
-        s.B6GovernoStatus,      s.B6GovernoQuebra,
-        s.B6PreparacaoStatus,   s.B6PreparacaoQuebra,
-        s.B6FeAcaoStatus,       s.B6FeAcaoQuebra,
-        s.B6ProsperidadeStatus, s.B6ProsperidadeQuebra,
-        s.B6Gargalo, s.B6ErroInvisivel, s.B6ProximoMovimento,
+        s.B6GovFinanceiroStatus,   s.B6GovFinanceiroQuebra,
+        s.B6IdentidadeAutoStatus,  s.B6IdentidadeAutoQuebra,
+        s.B6GovInteriorStatus,     s.B6GovInteriorQuebra,
+        s.B6AmbienteStatus,        s.B6AmbienteQuebra,
+        s.B6EspiritualidadeStatus, s.B6EspiritualidadeQuebra,
+        s.B6SinteseGeral,
         s.WhatsappEnviado, s.WhatsappEnviadoEm,
         s.MentorRevisado, s.MentorObservacao,
         s.Fase ?? "novo"

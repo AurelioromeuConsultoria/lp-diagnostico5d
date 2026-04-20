@@ -53,11 +53,11 @@ const BLOCOS = [
 ];
 
 const AREAS_B6 = [
-  { key: 'b6Identidade',   label: 'Identidade' },
-  { key: 'b6Governo',      label: 'Governo Interior' },
-  { key: 'b6Preparacao',   label: 'Preparação' },
-  { key: 'b6FeAcao',       label: 'Fé e Ação' },
-  { key: 'b6Prosperidade', label: 'Prosperidade' },
+  { key: 'b6GovFinanceiro',   label: '01 GOVERNO FINANCEIRO' },
+  { key: 'b6IdentidadeAuto',  label: '02 IDENTIDADE E AUTOCONCEITO' },
+  { key: 'b6GovInterior',     label: '03 GOVERNO INTERIOR E CONSTÂNCIA' },
+  { key: 'b6Ambiente',        label: '04 AMBIENTE E ALIANÇAS' },
+  { key: 'b6Espiritualidade', label: '05 ESPIRITUALIDADE E DIREÇÃO' },
 ];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -113,11 +113,11 @@ function exportarCSV(dados) {
 
 const STATUS_EMOJI = { ok: '✅', atencao: '⚠️', critico: '❌' };
 const AREAS_B6_LABELS = {
-  b6Identidade:   'Identidade e Posição',
-  b6Governo:      'Governo Interior',
-  b6Preparacao:   'Preparação e Processo',
-  b6FeAcao:       'Fé, Ação e Aliança',
-  b6Prosperidade: 'Prosperidade e Leis',
+  b6GovFinanceiro:   '01 Governo Financeiro',
+  b6IdentidadeAuto:  '02 Identidade e Autoconceito',
+  b6GovInterior:     '03 Governo Interior e Constância',
+  b6Ambiente:        '04 Ambiente e Alianças',
+  b6Espiritualidade: '05 Espiritualidade e Direção',
 };
 
 function gerarTXT(d) {
@@ -147,7 +147,7 @@ function gerarTXT(d) {
   });
 
   // Bloco 6
-  const temB6 = d.b6Gargalo || d.b6ErroInvisivel || d.b6ProximoMovimento ||
+  const temB6 = d.b6SinteseGeral ||
     Object.keys(AREAS_B6_LABELS).some(k => d[`${k}Status`] || d[`${k}Quebra`]);
 
   if (temB6) {
@@ -164,9 +164,7 @@ function gerarTXT(d) {
         linhas.push('');
       }
     });
-    if (d.b6Gargalo)          linhas.push(`Gargalo principal:\n   ${d.b6Gargalo}\n`);
-    if (d.b6ErroInvisivel)    linhas.push(`Erro invisível:\n   ${d.b6ErroInvisivel}\n`);
-    if (d.b6ProximoMovimento) linhas.push(`Próximo movimento:\n   ${d.b6ProximoMovimento}\n`);
+    if (d.b6SinteseGeral) linhas.push(`Síntese Geral:\n   ${d.b6SinteseGeral}\n`);
   }
 
   if (d.mentorObservacao) {
@@ -206,7 +204,7 @@ function abrirPDF(d) {
       </div>`).join('')}`).join('');
 
   const b6HTML = (() => {
-    const temB6 = d.b6Gargalo || d.b6ErroInvisivel || d.b6ProximoMovimento ||
+    const temB6 = d.b6SinteseGeral ||
       Object.keys(AREAS_B6_LABELS).some(k => d[`${k}Status`] || d[`${k}Quebra`]);
     if (!temB6) return '';
     const areas = Object.entries(AREAS_B6_LABELS).filter(([k]) => d[`${k}Status`] || d[`${k}Quebra`])
@@ -216,9 +214,7 @@ function abrirPDF(d) {
           ${d[`${k}Quebra`] ? `<div class="a">${esc(d[`${k}Quebra`])}</div>` : ''}
         </div>`).join('');
     return `<h3>Bloco 6 — Diagnóstico Final</h3>${areas}
-      ${d.b6Gargalo ? `<div class="qa"><div class="q">Gargalo principal</div><div class="a">${esc(d.b6Gargalo)}</div></div>` : ''}
-      ${d.b6ErroInvisivel ? `<div class="qa"><div class="q">Erro invisível</div><div class="a">${esc(d.b6ErroInvisivel)}</div></div>` : ''}
-      ${d.b6ProximoMovimento ? `<div class="qa"><div class="q">Próximo movimento</div><div class="a">${esc(d.b6ProximoMovimento)}</div></div>` : ''}`;
+      ${d.b6SinteseGeral ? `<div class="qa"><div class="q">Síntese Geral</div><div class="a">${esc(d.b6SinteseGeral)}</div></div>` : ''}`;
   })();
 
   const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
@@ -371,19 +367,17 @@ function SubmissionCard({ d, onRefresh }) {
 
   // Bloco 6
   const [b6, setB6] = useState(() => ({
-    b6IdentidadeStatus:   d.b6IdentidadeStatus   || '',
-    b6IdentidadeQuebra:   d.b6IdentidadeQuebra   || '',
-    b6GovernoStatus:      d.b6GovernoStatus      || '',
-    b6GovernoQuebra:      d.b6GovernoQuebra      || '',
-    b6PreparacaoStatus:   d.b6PreparacaoStatus   || '',
-    b6PreparacaoQuebra:   d.b6PreparacaoQuebra   || '',
-    b6FeAcaoStatus:       d.b6FeAcaoStatus       || '',
-    b6FeAcaoQuebra:       d.b6FeAcaoQuebra       || '',
-    b6ProsperidadeStatus: d.b6ProsperidadeStatus || '',
-    b6ProsperidadeQuebra: d.b6ProsperidadeQuebra || '',
-    b6Gargalo:            d.b6Gargalo            || '',
-    b6ErroInvisivel:      d.b6ErroInvisivel      || '',
-    b6ProximoMovimento:   d.b6ProximoMovimento   || '',
+    b6GovFinanceiroStatus:   d.b6GovFinanceiroStatus   || '',
+    b6GovFinanceiroQuebra:   d.b6GovFinanceiroQuebra   || '',
+    b6IdentidadeAutoStatus:  d.b6IdentidadeAutoStatus  || '',
+    b6IdentidadeAutoQuebra:  d.b6IdentidadeAutoQuebra  || '',
+    b6GovInteriorStatus:     d.b6GovInteriorStatus     || '',
+    b6GovInteriorQuebra:     d.b6GovInteriorQuebra     || '',
+    b6AmbienteStatus:        d.b6AmbienteStatus        || '',
+    b6AmbienteQuebra:        d.b6AmbienteQuebra        || '',
+    b6EspiritualidadeStatus: d.b6EspiritualidadeStatus || '',
+    b6EspiritualidadeQuebra: d.b6EspiritualidadeQuebra || '',
+    b6SinteseGeral:          d.b6SinteseGeral          || '',
   }));
   const [savingB6, setSavingB6] = useState(false);
   const [savedB6, setSavedB6] = useState(false);
@@ -666,22 +660,16 @@ function SubmissionCard({ d, onRefresh }) {
                 </table>
               </div>
 
-              {[
-                { field: 'b6Gargalo',          label: 'Gargalo principal',    placeholder: 'Área com mais quebras encadeadas...' },
-                { field: 'b6ErroInvisivel',    label: 'Erro invisível',       placeholder: 'O que ela não vê mas que está travando tudo...' },
-                { field: 'b6ProximoMovimento', label: 'Próximo movimento',    placeholder: 'Uma ação concreta para os próximos 7 dias...' },
-              ].map(({ field, label, placeholder }) => (
-                <div key={field} className="mb-4 last:mb-0">
-                  <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1.5">{label}</label>
-                  <textarea
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm resize-vertical min-h-[72px] focus:outline-none focus:border-primary transition-colors"
-                    rows={3}
-                    placeholder={placeholder}
-                    value={b6[field]}
-                    onChange={e => setB6Field(field, e.target.value)}
-                  />
-                </div>
-              ))}
+              <div className="mb-4">
+                <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1.5">Síntese Geral</label>
+                <textarea
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm resize-vertical min-h-[140px] focus:outline-none focus:border-primary transition-colors"
+                  rows={6}
+                  placeholder="Síntese geral do diagnóstico — padrão identificado nas cinco dimensões..."
+                  value={b6.b6SinteseGeral}
+                  onChange={e => setB6Field('b6SinteseGeral', e.target.value)}
+                />
+              </div>
 
               <div className="flex items-center justify-end gap-3 mt-2">
                 {savedB6 && <span className="text-xs font-semibold text-green-600">✓ Salvo com sucesso</span>}

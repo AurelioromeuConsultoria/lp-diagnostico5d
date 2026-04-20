@@ -47,19 +47,17 @@ public class Submission
     public string? Q25 { get; set; }
 
     // Bloco 6 — Diagnóstico Final (preenchido pelo mentor)
-    public string? B6IdentidadeStatus { get; set; }
-    public string? B6IdentidadeQuebra { get; set; }
-    public string? B6GovernoStatus { get; set; }
-    public string? B6GovernoQuebra { get; set; }
-    public string? B6PreparacaoStatus { get; set; }
-    public string? B6PreparacaoQuebra { get; set; }
-    public string? B6FeAcaoStatus { get; set; }
-    public string? B6FeAcaoQuebra { get; set; }
-    public string? B6ProsperidadeStatus { get; set; }
-    public string? B6ProsperidadeQuebra { get; set; }
-    public string? B6Gargalo { get; set; }
-    public string? B6ErroInvisivel { get; set; }
-    public string? B6ProximoMovimento { get; set; }
+    public string? B6GovFinanceiroStatus { get; set; }
+    public string? B6GovFinanceiroQuebra { get; set; }
+    public string? B6IdentidadeAutoStatus { get; set; }
+    public string? B6IdentidadeAutoQuebra { get; set; }
+    public string? B6GovInteriorStatus { get; set; }
+    public string? B6GovInteriorQuebra { get; set; }
+    public string? B6AmbienteStatus { get; set; }
+    public string? B6AmbienteQuebra { get; set; }
+    public string? B6EspiritualidadeStatus { get; set; }
+    public string? B6EspiritualidadeQuebra { get; set; }
+    public string? B6SinteseGeral { get; set; }
 
     // Fase do fluxo Kanban
     public string Fase { get; set; } = "novo";

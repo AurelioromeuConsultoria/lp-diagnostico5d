@@ -107,6 +107,18 @@ using (var scope = app.Services.CreateScope())
         "ALTER TABLE Submissions ADD COLUMN MentorRevisado INTEGER NOT NULL DEFAULT 0",
         "ALTER TABLE Submissions ADD COLUMN MentorObservacao TEXT NULL",
         "ALTER TABLE Submissions ADD COLUMN Fase TEXT NOT NULL DEFAULT 'novo'",
+        // Renomear colunas do Bloco 6 para os novos títulos das dimensões
+        "ALTER TABLE Submissions RENAME COLUMN B6IdentidadeStatus TO B6GovFinanceiroStatus",
+        "ALTER TABLE Submissions RENAME COLUMN B6IdentidadeQuebra TO B6GovFinanceiroQuebra",
+        "ALTER TABLE Submissions RENAME COLUMN B6GovernoStatus TO B6IdentidadeAutoStatus",
+        "ALTER TABLE Submissions RENAME COLUMN B6GovernoQuebra TO B6IdentidadeAutoQuebra",
+        "ALTER TABLE Submissions RENAME COLUMN B6PreparacaoStatus TO B6GovInteriorStatus",
+        "ALTER TABLE Submissions RENAME COLUMN B6PreparacaoQuebra TO B6GovInteriorQuebra",
+        "ALTER TABLE Submissions RENAME COLUMN B6FeAcaoStatus TO B6AmbienteStatus",
+        "ALTER TABLE Submissions RENAME COLUMN B6FeAcaoQuebra TO B6AmbienteQuebra",
+        "ALTER TABLE Submissions RENAME COLUMN B6ProsperidadeStatus TO B6EspiritualidadeStatus",
+        "ALTER TABLE Submissions RENAME COLUMN B6ProsperidadeQuebra TO B6EspiritualidadeQuebra",
+        "ALTER TABLE Submissions RENAME COLUMN B6Gargalo TO B6SinteseGeral",
     };
     foreach (var sql in novasColunas)
     {

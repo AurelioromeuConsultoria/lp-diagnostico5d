@@ -14,14 +14,12 @@ public record SubmissionDto(
     string? Q11, string? Q12, string? Q13, string? Q14, string? Q15,
     string? Q16, string? Q17, string? Q18, string? Q19, string? Q20,
     string? Q21, string? Q22, string? Q23, string? Q24, string? Q25,
-    string? B6IdentidadeStatus,  string? B6IdentidadeQuebra,
-    string? B6GovernoStatus,     string? B6GovernoQuebra,
-    string? B6PreparacaoStatus,  string? B6PreparacaoQuebra,
-    string? B6FeAcaoStatus,      string? B6FeAcaoQuebra,
-    string? B6ProsperidadeStatus,string? B6ProsperidadeQuebra,
-    string? B6Gargalo,
-    string? B6ErroInvisivel,
-    string? B6ProximoMovimento,
+    string? B6GovFinanceiroStatus,  string? B6GovFinanceiroQuebra,
+    string? B6IdentidadeAutoStatus, string? B6IdentidadeAutoQuebra,
+    string? B6GovInteriorStatus,    string? B6GovInteriorQuebra,
+    string? B6AmbienteStatus,       string? B6AmbienteQuebra,
+    string? B6EspiritualidadeStatus,string? B6EspiritualidadeQuebra,
+    string? B6SinteseGeral,
     bool WhatsappEnviado,
     DateTime? WhatsappEnviadoEm,
     bool MentorRevisado,
@@ -54,14 +52,12 @@ public record UpdateSubmissionRequest(
 );
 
 public record Bloco6Request(
-    string? B6IdentidadeStatus,  string? B6IdentidadeQuebra,
-    string? B6GovernoStatus,     string? B6GovernoQuebra,
-    string? B6PreparacaoStatus,  string? B6PreparacaoQuebra,
-    string? B6FeAcaoStatus,      string? B6FeAcaoQuebra,
-    string? B6ProsperidadeStatus,string? B6ProsperidadeQuebra,
-    string? B6Gargalo,
-    string? B6ErroInvisivel,
-    string? B6ProximoMovimento
+    string? B6GovFinanceiroStatus,  string? B6GovFinanceiroQuebra,
+    string? B6IdentidadeAutoStatus, string? B6IdentidadeAutoQuebra,
+    string? B6GovInteriorStatus,    string? B6GovInteriorQuebra,
+    string? B6AmbienteStatus,       string? B6AmbienteQuebra,
+    string? B6EspiritualidadeStatus,string? B6EspiritualidadeQuebra,
+    string? B6SinteseGeral
 );
 
 public record EditarCadastroRequest(string Nome, string? Whatsapp);
