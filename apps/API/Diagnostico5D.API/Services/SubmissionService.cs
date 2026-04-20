@@ -134,6 +134,7 @@ public class SubmissionService(
         submission.B6EspiritualidadeStatus = req.B6EspiritualidadeStatus;
         submission.B6EspiritualidadeQuebra = req.B6EspiritualidadeQuebra;
         submission.B6SinteseGeral          = req.B6SinteseGeral;
+        submission.B6Passos                = req.B6Passos;
         submission.UpdatedAt               = DateTime.Now;
 
         // Transição automática: bloco6 preenchido → diagnosticado
@@ -307,6 +308,7 @@ public class SubmissionService(
         s.B6AmbienteStatus,        s.B6AmbienteQuebra,
         s.B6EspiritualidadeStatus, s.B6EspiritualidadeQuebra,
         s.B6SinteseGeral,
+        s.B6Passos,
         s.WhatsappEnviado, s.WhatsappEnviadoEm,
         s.MentorRevisado, s.MentorObservacao,
         s.Fase ?? "novo"

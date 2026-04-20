@@ -259,7 +259,7 @@ const STATUS_LABEL = { ok: 'Ponto Forte', atencao: 'Atenção', critico: 'Quebra
 const STATUS_COLOR = { ok: '#1a7a4a', atencao: '#92600a', critico: '#991b1b' };
 const STATUS_BG    = { ok: '#f0fdf4', atencao: '#fffbeb', critico: '#fef2f2' };
 
-function gerarDevolutivaPDF(d, b6) {
+function gerarDevolutivaPDF(d, b6, passos) {
   const esc  = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const nl2p = s => s ? s.split(/\n+/).filter(Boolean).map(p => `<p>${esc(p)}</p>`).join('') : '';
   const primeiroNome = (d.nome || '').split(' ')[0];
@@ -290,6 +290,21 @@ function gerarDevolutivaPDF(d, b6) {
     <div class="sintese">
       <div class="sintese-titulo">SÍNTESE GERAL</div>
       <div class="sintese-corpo">${nl2p(b6.b6SinteseGeral)}</div>
+    </div>` : '';
+
+  const passosValidos = (passos || []).filter(p => p.titulo || p.texto);
+  const passosHTML = passosValidos.length ? `
+    <div class="passos-section">
+      <div class="passos-titulo">SEUS PRÓXIMOS PASSOS</div>
+      <div class="passos-divider"></div>
+      ${passosValidos.map((p, i) => `
+        <div class="passo">
+          <div class="passo-header">
+            <div class="passo-num">${String(i + 1).padStart(2,'0')}</div>
+            <div class="passo-label">${esc(p.titulo)}</div>
+          </div>
+          <div class="passo-corpo">${nl2p(p.texto)}</div>
+        </div>`).join('')}
     </div>` : '';
 
   const html = `<!DOCTYPE html>
@@ -327,8 +342,18 @@ function gerarDevolutivaPDF(d, b6) {
   .sintese-titulo{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;text-align:center;letter-spacing:.08em;margin-bottom:16px;color:#c8b97a}
   .sintese-corpo p{color:#d4dde8;margin-bottom:10px;line-height:1.8;text-align:justify}
 
+  /* PRÓXIMOS PASSOS */
+  .passos-section{margin:40px 0 36px}
+  .passos-titulo{font-family:'Inter',sans-serif;font-weight:800;font-size:15px;letter-spacing:.12em;color:#1e2d4a;text-transform:uppercase;margin-bottom:6px}
+  .passos-divider{height:2px;background:linear-gradient(to right,#c8b97a,transparent);margin-bottom:28px}
+  .passo{margin-bottom:28px}
+  .passo-header{display:flex;align-items:center;gap:0;margin-bottom:10px}
+  .passo-num{background:#1e2d4a;color:#c8b97a;font-family:'Playfair Display',serif;font-weight:700;font-size:14px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .passo-label{background:#f4f7fb;color:#1e2d4a;font-weight:700;font-size:13.5px;padding:0 18px;height:42px;display:flex;align-items:center;flex:1;border-bottom:2px solid #1e2d4a}
+  .passo-corpo p{color:#333;margin-bottom:8px;text-align:justify;line-height:1.8}
+
   /* RODAPÉ */
-  .rodape{text-align:center;font-size:10.5px;color:#888;border-top:1px solid #e8e8e8;padding-top:16px;margin-top:40px;line-height:1.8}
+  .rodape{text-align:center;font-size:10.5px;color:#888;border-top:2px solid #c8b97a;padding-top:16px;margin-top:40px;line-height:1.8}
   .rodape strong{color:#1e2d4a}
 
   @media print{
@@ -354,6 +379,7 @@ function gerarDevolutivaPDF(d, b6) {
 
   ${secoesHTML}
   ${sinteseHTML}
+  ${passosHTML}
 
   <div class="rodape">
     <strong>@sandrolopez</strong> &bull; Governo &amp; Finanças &bull; Diagnóstico 5D<br>
@@ -489,6 +515,11 @@ function SubmissionCard({ d, onRefresh }) {
   const [sendingWpp, setSendingWpp] = useState(false);
   const [togglingRevisado, setTogglingRevisado] = useState(false);
 
+  const parsePassos = raw => {
+    try { const p = JSON.parse(raw || '[]'); return Array.isArray(p) ? p : []; } catch { return []; }
+  };
+  const PASSOS_EMPTY = Array.from({ length: 5 }, (_, i) => ({ titulo: '', texto: '' }));
+
   // Bloco 6
   const [b6, setB6] = useState(() => ({
     b6GovFinanceiroStatus:   d.b6GovFinanceiroStatus   || '',
@@ -503,6 +534,10 @@ function SubmissionCard({ d, onRefresh }) {
     b6EspiritualidadeQuebra: d.b6EspiritualidadeQuebra || '',
     b6SinteseGeral:          d.b6SinteseGeral          || '',
   }));
+  const [passos, setPassos] = useState(() => {
+    const p = parsePassos(d.b6Passos);
+    return p.length === 5 ? p : PASSOS_EMPTY;
+  });
   const [savingB6, setSavingB6] = useState(false);
   const [savedB6, setSavedB6] = useState(false);
 
@@ -521,6 +556,8 @@ function SubmissionCard({ d, onRefresh }) {
       b6EspiritualidadeQuebra: d.b6EspiritualidadeQuebra || '',
       b6SinteseGeral:          d.b6SinteseGeral          || '',
     });
+    const p = parsePassos(d.b6Passos);
+    setPassos(p.length === 5 ? p : PASSOS_EMPTY);
   }, [d.updatedAt]);
 
   // Mentor
@@ -532,7 +569,7 @@ function SubmissionCard({ d, onRefresh }) {
   const saveBloco6 = async () => {
     setSavingB6(true);
     try {
-      await diagnosticoApi.updateBloco6(d.id, b6);
+      await diagnosticoApi.updateBloco6(d.id, { ...b6, b6Passos: JSON.stringify(passos) });
       setSavedB6(true);
       setTimeout(() => setSavedB6(false), 3000);
       onRefresh();
@@ -801,7 +838,7 @@ function SubmissionCard({ d, onRefresh }) {
                 </table>
               </div>
 
-              <div className="mb-4">
+              <div className="mb-6">
                 <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1.5">Síntese Geral</label>
                 <textarea
                   className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm resize-vertical min-h-[140px] focus:outline-none focus:border-primary transition-colors"
@@ -812,8 +849,37 @@ function SubmissionCard({ d, onRefresh }) {
                 />
               </div>
 
+              {/* Próximos Passos */}
+              <div className="border-t border-border/60 pt-5 mb-2">
+                <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Seus Próximos Passos</div>
+                <div className="space-y-4">
+                  {passos.map((passo, i) => (
+                    <div key={i} className="bg-background border border-border rounded-xl p-4 space-y-2">
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="w-7 h-7 rounded bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <input
+                          className="flex-1 bg-transparent border-b border-border text-sm font-semibold focus:outline-none focus:border-primary transition-colors pb-0.5"
+                          placeholder={`Título do passo ${i + 1}...`}
+                          value={passo.titulo}
+                          onChange={e => setPassos(prev => prev.map((p, j) => j === i ? { ...p, titulo: e.target.value } : p))}
+                        />
+                      </div>
+                      <textarea
+                        className="w-full bg-muted/30 border border-border/50 rounded-lg px-3 py-2 text-sm resize-vertical min-h-[72px] focus:outline-none focus:border-primary transition-colors"
+                        rows={3}
+                        placeholder="Descrição do passo..."
+                        value={passo.texto}
+                        onChange={e => setPassos(prev => prev.map((p, j) => j === i ? { ...p, texto: e.target.value } : p))}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex items-center justify-between gap-3 mt-2">
-                <Button variant="outline" onClick={() => gerarDevolutivaPDF(d, b6)}>
+                <Button variant="outline" onClick={() => gerarDevolutivaPDF(d, b6, passos)}>
                   Gerar Devolutiva PDF
                 </Button>
                 <div className="flex items-center gap-3">
