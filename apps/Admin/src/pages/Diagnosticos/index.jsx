@@ -506,6 +506,23 @@ function SubmissionCard({ d, onRefresh }) {
   const [savingB6, setSavingB6] = useState(false);
   const [savedB6, setSavedB6] = useState(false);
 
+  // Sincroniza b6 quando dados da API atualizam (após salvar/refresh)
+  useEffect(() => {
+    setB6({
+      b6GovFinanceiroStatus:   d.b6GovFinanceiroStatus   || '',
+      b6GovFinanceiroQuebra:   d.b6GovFinanceiroQuebra   || '',
+      b6IdentidadeAutoStatus:  d.b6IdentidadeAutoStatus  || '',
+      b6IdentidadeAutoQuebra:  d.b6IdentidadeAutoQuebra  || '',
+      b6GovInteriorStatus:     d.b6GovInteriorStatus     || '',
+      b6GovInteriorQuebra:     d.b6GovInteriorQuebra     || '',
+      b6AmbienteStatus:        d.b6AmbienteStatus        || '',
+      b6AmbienteQuebra:        d.b6AmbienteQuebra        || '',
+      b6EspiritualidadeStatus: d.b6EspiritualidadeStatus || '',
+      b6EspiritualidadeQuebra: d.b6EspiritualidadeQuebra || '',
+      b6SinteseGeral:          d.b6SinteseGeral          || '',
+    });
+  }, [d.updatedAt]);
+
   // Mentor
   const [observacao, setObservacao] = useState(d.mentorObservacao || '');
   const [savingObs, setSavingObs] = useState(false);
