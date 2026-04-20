@@ -58,7 +58,6 @@ public class Submission
     public string? B6EspiritualidadeStatus { get; set; }
     public string? B6EspiritualidadeQuebra { get; set; }
     public string? B6SinteseGeral { get; set; }
-    public string? B6Passos { get; set; } // JSON: [{titulo, texto}, ...]
 
     // Fase do fluxo Kanban
     public string Fase { get; set; } = "novo";

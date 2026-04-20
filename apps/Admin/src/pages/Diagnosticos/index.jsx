@@ -259,7 +259,30 @@ const STATUS_LABEL = { ok: 'Ponto Forte', atencao: 'Atenção', critico: 'Quebra
 const STATUS_COLOR = { ok: '#1a7a4a', atencao: '#92600a', critico: '#991b1b' };
 const STATUS_BG    = { ok: '#f0fdf4', atencao: '#fffbeb', critico: '#fef2f2' };
 
-function gerarDevolutivaPDF(d, b6, passos) {
+const PASSOS_FIXOS = [
+  {
+    titulo: 'Crie um ritual de silêncio diário',
+    texto: 'Não começa com um devocional de 40 dias. Começa com cinco minutos, todo dia, sem exceção. Você senta, fecha o celular, e fica quieto na presença de Deus. Sem expectativa de ouvir algo grandioso. Só você ali. Intimidade não se pede — se pratica.',
+  },
+  {
+    titulo: 'Escolha uma coisa e vai até o fim',
+    texto: 'Só uma. Não três. Uma. Você escolhe o que mais importa agora e decide que vai terminar, mesmo quando a empolgação for embora. Especialmente quando a empolgação for embora. É aí que o governo começa — quando você faz o que decidiu mesmo sem sentir vontade.',
+  },
+  {
+    titulo: 'Governe o que já está na sua mão',
+    texto: 'Antes de expandir, organize o que você já tem. O próximo nível não vem de uma oportunidade nova — vem de você honrar, com excelência e constância, o que já foi entregue. Quem é fiel no pouco recebe autoridade sobre o muito.',
+  },
+  {
+    titulo: 'Para de pedir direção antes de criar intimidade',
+    texto: 'Você pede GPS mas não ligou o motor. A direção que você está buscando vem de dentro — de uma relação real com Deus, não de um sinal do céu que dispensa o processo. Você começa o silêncio diário, e a clareza vem. Não antes.',
+  },
+  {
+    titulo: 'Protege sua mente como se ela valesse ouro',
+    texto: 'Você passa horas consumindo o que o mundo oferece. Isso não é descanso — é mais ruído entrando. Define um horário em que o celular para. Sua mente precisa de silêncio para poder governar — e ela ainda não tem isso.',
+  },
+];
+
+function gerarDevolutivaPDF(d, b6) {
   const esc  = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const nl2p = s => s ? s.split(/\n+/).filter(Boolean).map(p => `<p>${esc(p)}</p>`).join('') : '';
   const primeiroNome = (d.nome || '').split(' ')[0];
@@ -292,12 +315,11 @@ function gerarDevolutivaPDF(d, b6, passos) {
       <div class="sintese-corpo">${nl2p(b6.b6SinteseGeral)}</div>
     </div>` : '';
 
-  const passosValidos = (passos || []).filter(p => p.titulo || p.texto);
-  const passosHTML = passosValidos.length ? `
+  const passosHTML = `
     <div class="passos-section">
       <div class="passos-titulo">SEUS PRÓXIMOS PASSOS</div>
       <div class="passos-divider"></div>
-      ${passosValidos.map((p, i) => `
+      ${PASSOS_FIXOS.map((p, i) => `
         <div class="passo">
           <div class="passo-header">
             <div class="passo-num">${String(i + 1).padStart(2,'0')}</div>
@@ -305,7 +327,7 @@ function gerarDevolutivaPDF(d, b6, passos) {
           </div>
           <div class="passo-corpo">${nl2p(p.texto)}</div>
         </div>`).join('')}
-    </div>` : '';
+    </div>`;
 
   const html = `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -515,11 +537,6 @@ function SubmissionCard({ d, onRefresh }) {
   const [sendingWpp, setSendingWpp] = useState(false);
   const [togglingRevisado, setTogglingRevisado] = useState(false);
 
-  const parsePassos = raw => {
-    try { const p = JSON.parse(raw || '[]'); return Array.isArray(p) ? p : []; } catch { return []; }
-  };
-  const PASSOS_EMPTY = Array.from({ length: 5 }, (_, i) => ({ titulo: '', texto: '' }));
-
   // Bloco 6
   const [b6, setB6] = useState(() => ({
     b6GovFinanceiroStatus:   d.b6GovFinanceiroStatus   || '',
@@ -534,10 +551,6 @@ function SubmissionCard({ d, onRefresh }) {
     b6EspiritualidadeQuebra: d.b6EspiritualidadeQuebra || '',
     b6SinteseGeral:          d.b6SinteseGeral          || '',
   }));
-  const [passos, setPassos] = useState(() => {
-    const p = parsePassos(d.b6Passos);
-    return p.length === 5 ? p : PASSOS_EMPTY;
-  });
   const [savingB6, setSavingB6] = useState(false);
   const [savedB6, setSavedB6] = useState(false);
 
@@ -556,8 +569,6 @@ function SubmissionCard({ d, onRefresh }) {
       b6EspiritualidadeQuebra: d.b6EspiritualidadeQuebra || '',
       b6SinteseGeral:          d.b6SinteseGeral          || '',
     });
-    const p = parsePassos(d.b6Passos);
-    setPassos(p.length === 5 ? p : PASSOS_EMPTY);
   }, [d.updatedAt]);
 
   // Mentor
@@ -569,7 +580,7 @@ function SubmissionCard({ d, onRefresh }) {
   const saveBloco6 = async () => {
     setSavingB6(true);
     try {
-      await diagnosticoApi.updateBloco6(d.id, { ...b6, b6Passos: JSON.stringify(passos) });
+      await diagnosticoApi.updateBloco6(d.id, b6);
       setSavedB6(true);
       setTimeout(() => setSavedB6(false), 3000);
       onRefresh();
@@ -849,37 +860,9 @@ function SubmissionCard({ d, onRefresh }) {
                 />
               </div>
 
-              {/* Próximos Passos */}
-              <div className="border-t border-border/60 pt-5 mb-2">
-                <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Seus Próximos Passos</div>
-                <div className="space-y-4">
-                  {passos.map((passo, i) => (
-                    <div key={i} className="bg-background border border-border rounded-xl p-4 space-y-2">
-                      <div className="flex items-center gap-3 mb-1">
-                        <span className="w-7 h-7 rounded bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
-                          {String(i + 1).padStart(2, '0')}
-                        </span>
-                        <input
-                          className="flex-1 bg-transparent border-b border-border text-sm font-semibold focus:outline-none focus:border-primary transition-colors pb-0.5"
-                          placeholder={`Título do passo ${i + 1}...`}
-                          value={passo.titulo}
-                          onChange={e => setPassos(prev => prev.map((p, j) => j === i ? { ...p, titulo: e.target.value } : p))}
-                        />
-                      </div>
-                      <textarea
-                        className="w-full bg-muted/30 border border-border/50 rounded-lg px-3 py-2 text-sm resize-vertical min-h-[72px] focus:outline-none focus:border-primary transition-colors"
-                        rows={3}
-                        placeholder="Descrição do passo..."
-                        value={passo.texto}
-                        onChange={e => setPassos(prev => prev.map((p, j) => j === i ? { ...p, texto: e.target.value } : p))}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
 
               <div className="flex items-center justify-between gap-3 mt-2">
-                <Button variant="outline" onClick={() => gerarDevolutivaPDF(d, b6, passos)}>
+                <Button variant="outline" onClick={() => gerarDevolutivaPDF(d, b6)}>
                   Gerar Devolutiva PDF
                 </Button>
                 <div className="flex items-center gap-3">

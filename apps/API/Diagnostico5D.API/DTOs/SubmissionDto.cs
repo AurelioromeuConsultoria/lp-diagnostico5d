@@ -20,7 +20,6 @@ public record SubmissionDto(
     string? B6AmbienteStatus,       string? B6AmbienteQuebra,
     string? B6EspiritualidadeStatus,string? B6EspiritualidadeQuebra,
     string? B6SinteseGeral,
-    string? B6Passos,
     bool WhatsappEnviado,
     DateTime? WhatsappEnviadoEm,
     bool MentorRevisado,
@@ -58,8 +57,7 @@ public record Bloco6Request(
     string? B6GovInteriorStatus,    string? B6GovInteriorQuebra,
     string? B6AmbienteStatus,       string? B6AmbienteQuebra,
     string? B6EspiritualidadeStatus,string? B6EspiritualidadeQuebra,
-    string? B6SinteseGeral,
-    string? B6Passos
+    string? B6SinteseGeral
 );
 
 public record EditarCadastroRequest(string Nome, string? Whatsapp);

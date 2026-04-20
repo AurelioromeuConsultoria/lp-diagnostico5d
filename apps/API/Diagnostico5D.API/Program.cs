@@ -119,7 +119,6 @@ using (var scope = app.Services.CreateScope())
         "ALTER TABLE Submissions RENAME COLUMN B6ProsperidadeStatus TO B6EspiritualidadeStatus",
         "ALTER TABLE Submissions RENAME COLUMN B6ProsperidadeQuebra TO B6EspiritualidadeQuebra",
         "ALTER TABLE Submissions RENAME COLUMN B6Gargalo TO B6SinteseGeral",
-        "ALTER TABLE Submissions ADD COLUMN B6Passos TEXT NULL",
     };
     foreach (var sql in novasColunas)
     {
