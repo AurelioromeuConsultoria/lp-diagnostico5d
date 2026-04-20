@@ -287,45 +287,50 @@ function gerarDevolutivaPDF(d, b6) {
   const nl2p = s => s ? s.split(/\n+/).filter(Boolean).map(p => `<p>${esc(p)}</p>`).join('') : '';
   const primeiroNome = (d.nome || '').split(' ')[0];
 
-  const secoesHTML = AREAS_DEVOLUTIVA.map(area => {
+  const STATUS_BADGE = {
+    ok:      { label: 'Em bom estado',        dot: '#16a34a' },
+    atencao: { label: 'Requer atenção',        dot: '#d97706' },
+    critico: { label: 'Quebra identificada',   dot: '#dc2626' },
+  };
+
+  const secoesHTML = AREAS_DEVOLUTIVA.map((area, idx) => {
     const status = b6[`${area.key}Status`];
-    const quebra = b6[`${area.key}Quebra`] || '';
-    const label  = STATUS_LABEL[status] || '';
-    const cor    = STATUS_COLOR[status] || '#555';
-    const bg     = STATUS_BG[status]    || '#f9f9f9';
-    const temConteudo = status || quebra;
-    if (!temConteudo) return '';
+    const quebra = (b6[`${area.key}Quebra`] || '').trim();
+    if (!status && !quebra) return '';
+    const badge = STATUS_BADGE[status];
     return `
       <div class="secao">
-        <div class="secao-header">
-          <div class="secao-num">${area.num}</div>
-          <div class="secao-titulo">${area.titulo}</div>
+        <div class="secao-kicker">
+          <span class="secao-num">${area.num}</span>
+          ${badge ? `<span class="secao-badge"><span class="dot" style="background:${badge.dot}"></span>${badge.label}</span>` : ''}
         </div>
-        ${label ? `
-        <div class="diagnostico-tag" style="color:${cor};background:${bg};border-left:4px solid ${cor}">
-          <em>DIAGNÓSTICO: ${esc(label)}${quebra ? ' — ' + esc(quebra.split('\n')[0].slice(0, 120)) + (quebra.length > 120 ? '…' : '') : ''}</em>
-        </div>` : ''}
-        <div class="secao-corpo">${nl2p(quebra)}</div>
+        <h2 class="secao-titulo">${area.titulo}</h2>
+        ${quebra ? `<div class="secao-corpo">${nl2p(quebra)}</div>` : ''}
+        <div class="secao-rule"></div>
       </div>`;
   }).join('');
 
   const sinteseHTML = b6.b6SinteseGeral ? `
     <div class="sintese">
-      <div class="sintese-titulo">SÍNTESE GERAL</div>
+      <div class="sintese-eyebrow">Síntese</div>
+      <h2 class="sintese-titulo">O padrão que aparece nas cinco dimensões</h2>
       <div class="sintese-corpo">${nl2p(b6.b6SinteseGeral)}</div>
     </div>` : '';
 
   const passosHTML = `
-    <div class="passos-section">
-      <div class="passos-titulo">SEUS PRÓXIMOS PASSOS</div>
-      <div class="passos-divider"></div>
+    <div class="passos">
+      <div class="passos-eyebrow">Orientação</div>
+      <h2 class="passos-titulo">Seus Próximos Passos</h2>
+      <div class="passos-rule"></div>
       ${PASSOS_FIXOS.map((p, i) => `
         <div class="passo">
-          <div class="passo-header">
-            <div class="passo-num">${String(i + 1).padStart(2,'0')}</div>
-            <div class="passo-label">${esc(p.titulo)}</div>
+          <div class="passo-left">
+            <span class="passo-num">${String(i+1).padStart(2,'0')}</span>
           </div>
-          <div class="passo-corpo">${nl2p(p.texto)}</div>
+          <div class="passo-right">
+            <div class="passo-titulo">${esc(p.titulo)}</div>
+            <div class="passo-corpo">${nl2p(p.texto)}</div>
+          </div>
         </div>`).join('')}
     </div>`;
 
@@ -334,69 +339,295 @@ function gerarDevolutivaPDF(d, b6) {
 <head>
 <meta charset="UTF-8"/>
 <title>Diagnóstico 5D — ${esc(d.nome)}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"/>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
-
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;font-size:13.5px;line-height:1.75}
-  .page{max-width:720px;margin:0 auto;padding:48px 40px}
 
-  /* HEADER */
-  .header{text-align:center;background:#1e2d4a;color:#fff;padding:36px 32px 28px;border-radius:4px;margin-bottom:32px}
-  .header-title{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;letter-spacing:.06em;margin-bottom:6px}
-  .header-sub{font-size:13px;color:#c8b97a;letter-spacing:.08em;margin-bottom:4px}
-  .header-brand{font-size:11.5px;color:#8fa3c8;letter-spacing:.04em}
+  :root{
+    --dark:    #180E06;
+    --dark-2:  #251507;
+    --orange:  #C94B00;
+    --warm:    #F5EDE0;
+    --off:     #FAFAF7;
+    --text-2:  #6B5040;
+    --text-3:  #A08878;
+    --sand:    #E8D5BA;
+  }
 
-  /* INTRO */
-  .intro{font-style:italic;color:#444;border-left:3px solid #c8b97a;padding:12px 16px;margin-bottom:36px;background:#fffdf5;border-radius:0 4px 4px 0;font-size:13px;line-height:1.8}
+  body{
+    font-family:'DM Sans',sans-serif;
+    background:#fff;
+    color:var(--dark);
+    font-size:14px;
+    line-height:1.75;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
 
-  /* SEÇÃO */
-  .secao{margin-bottom:36px;border-bottom:1px solid #e8e8e8;padding-bottom:32px}
-  .secao:last-of-type{border-bottom:none}
-  .secao-header{display:flex;align-items:center;gap:14px;margin-bottom:12px}
-  .secao-num{background:#1e2d4a;color:#c8b97a;font-family:'Playfair Display',serif;font-weight:700;font-size:16px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:3px;flex-shrink:0}
-  .secao-titulo{font-family:'Inter',sans-serif;font-weight:700;font-size:14px;letter-spacing:.1em;color:#1e2d4a;text-transform:uppercase}
-  .diagnostico-tag{font-size:12.5px;padding:8px 14px;margin-bottom:14px;border-radius:0 4px 4px 0;line-height:1.6}
-  .secao-corpo p{color:#333;margin-bottom:10px;text-align:justify}
+  .page{max-width:700px;margin:0 auto;padding:0 0 60px}
 
-  /* SÍNTESE */
-  .sintese{background:#1e2d4a;color:#fff;border-radius:6px;padding:28px 32px;margin:40px 0 36px}
-  .sintese-titulo{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;text-align:center;letter-spacing:.08em;margin-bottom:16px;color:#c8b97a}
-  .sintese-corpo p{color:#d4dde8;margin-bottom:10px;line-height:1.8;text-align:justify}
+  /* ── CAPA ── */
+  .capa{
+    background:var(--dark);
+    padding:56px 48px 48px;
+    position:relative;
+    overflow:hidden;
+    margin-bottom:52px;
+  }
+  .capa::after{
+    content:'';
+    position:absolute;
+    bottom:0;left:0;right:0;
+    height:3px;
+    background:linear-gradient(90deg,var(--orange),#E8621A,transparent);
+  }
+  .capa-eyebrow{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:10px;
+    font-weight:600;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--text-3);
+    margin-bottom:20px;
+  }
+  .capa-title{
+    font-family:'Playfair Display',serif;
+    font-size:38px;
+    font-weight:900;
+    color:#fff;
+    line-height:1.1;
+    letter-spacing:-.01em;
+    margin-bottom:6px;
+  }
+  .capa-subtitle{
+    font-family:'Playfair Display',serif;
+    font-size:16px;
+    font-weight:400;
+    font-style:italic;
+    color:var(--sand);
+    margin-bottom:32px;
+  }
+  .capa-meta{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    border-top:1px solid rgba(255,255,255,.1);
+    padding-top:20px;
+    margin-top:4px;
+  }
+  .capa-avatar{
+    width:44px;height:44px;
+    border-radius:50%;
+    background:var(--orange);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Playfair Display',serif;
+    font-size:18px;font-weight:700;
+    color:#fff;
+    flex-shrink:0;
+  }
+  .capa-nome{
+    font-family:'DM Sans',sans-serif;
+    font-size:15px;font-weight:500;
+    color:#fff;line-height:1.3;
+  }
+  .capa-brand{
+    font-size:11px;
+    color:var(--text-3);
+    margin-top:2px;
+  }
 
-  /* PRÓXIMOS PASSOS */
-  .passos-section{margin:40px 0 36px}
-  .passos-titulo{font-family:'Inter',sans-serif;font-weight:800;font-size:15px;letter-spacing:.12em;color:#1e2d4a;text-transform:uppercase;margin-bottom:6px}
-  .passos-divider{height:2px;background:linear-gradient(to right,#c8b97a,transparent);margin-bottom:28px}
-  .passo{margin-bottom:28px}
-  .passo-header{display:flex;align-items:center;gap:0;margin-bottom:10px}
-  .passo-num{background:#1e2d4a;color:#c8b97a;font-family:'Playfair Display',serif;font-weight:700;font-size:14px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .passo-label{background:#f4f7fb;color:#1e2d4a;font-weight:700;font-size:13.5px;padding:0 18px;height:42px;display:flex;align-items:center;flex:1;border-bottom:2px solid #1e2d4a}
-  .passo-corpo p{color:#333;margin-bottom:8px;text-align:justify;line-height:1.8}
+  /* ── INTRO ── */
+  .intro{
+    padding:0 48px;
+    margin-bottom:48px;
+  }
+  .intro-text{
+    font-size:14.5px;
+    font-style:italic;
+    color:var(--text-2);
+    line-height:1.9;
+    border-left:3px solid var(--orange);
+    padding-left:20px;
+  }
 
-  /* RODAPÉ */
-  .rodape{text-align:center;font-size:10.5px;color:#888;border-top:2px solid #c8b97a;padding-top:16px;margin-top:40px;line-height:1.8}
-  .rodape strong{color:#1e2d4a}
+  /* ── SEÇÕES ── */
+  .secao{padding:0 48px;margin-bottom:48px}
+  .secao-kicker{
+    display:flex;align-items:center;gap:10px;
+    margin-bottom:10px;
+  }
+  .secao-num{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:11px;font-weight:700;
+    letter-spacing:.14em;
+    color:var(--orange);
+  }
+  .secao-badge{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:10px;font-weight:600;letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--text-3);
+  }
+  .dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+  .secao-titulo{
+    font-family:'Playfair Display',serif;
+    font-size:22px;font-weight:700;
+    color:var(--dark);
+    line-height:1.2;
+    margin-bottom:16px;
+  }
+  .secao-corpo p{
+    color:var(--text-2);
+    margin-bottom:12px;
+    line-height:1.85;
+    text-align:justify;
+  }
+  .secao-rule{
+    height:1px;
+    background:linear-gradient(90deg,rgba(201,75,0,.25),transparent);
+    margin-top:36px;
+  }
+
+  /* ── SÍNTESE ── */
+  .sintese{
+    margin:52px 48px;
+    background:var(--dark);
+    border-radius:4px;
+    padding:40px 44px;
+    position:relative;
+    overflow:hidden;
+  }
+  .sintese::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;bottom:0;
+    width:4px;
+    background:var(--orange);
+  }
+  .sintese-eyebrow{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:10px;font-weight:600;letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--orange);
+    margin-bottom:12px;
+  }
+  .sintese-titulo{
+    font-family:'Playfair Display',serif;
+    font-size:20px;font-weight:700;font-style:italic;
+    color:#fff;
+    margin-bottom:20px;
+    line-height:1.35;
+  }
+  .sintese-corpo p{
+    color:rgba(255,255,255,.72);
+    margin-bottom:12px;
+    line-height:1.85;
+    text-align:justify;
+    font-size:13.5px;
+  }
+
+  /* ── PRÓXIMOS PASSOS ── */
+  .passos{padding:0 48px;margin-top:52px}
+  .passos-eyebrow{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:10px;font-weight:600;letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--orange);
+    margin-bottom:8px;
+  }
+  .passos-titulo{
+    font-family:'Playfair Display',serif;
+    font-size:26px;font-weight:700;
+    color:var(--dark);
+    margin-bottom:4px;
+  }
+  .passos-rule{
+    height:2px;
+    background:linear-gradient(90deg,var(--orange),rgba(201,75,0,.12));
+    margin:20px 0 36px;
+  }
+  .passo{
+    display:flex;gap:24px;
+    margin-bottom:32px;
+    padding-bottom:32px;
+    border-bottom:1px solid rgba(24,14,6,.07);
+  }
+  .passo:last-child{border-bottom:none;padding-bottom:0}
+  .passo-left{flex-shrink:0;padding-top:3px}
+  .passo-num{
+    display:flex;align-items:center;justify-content:center;
+    width:40px;height:40px;
+    background:var(--dark);
+    border-radius:2px;
+    font-family:'Playfair Display',serif;
+    font-size:15px;font-weight:700;
+    color:var(--orange);
+  }
+  .passo-right{flex:1}
+  .passo-titulo{
+    font-family:'DM Sans',sans-serif;
+    font-size:14.5px;font-weight:700;
+    color:var(--dark);
+    margin-bottom:8px;
+    line-height:1.3;
+  }
+  .passo-corpo p{
+    color:var(--text-2);
+    line-height:1.85;
+    font-size:13.5px;
+    text-align:justify;
+    margin-bottom:6px;
+  }
+
+  /* ── RODAPÉ ── */
+  .rodape{
+    margin:56px 48px 0;
+    padding-top:20px;
+    border-top:1px solid rgba(24,14,6,.1);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .rodape-brand{
+    font-family:'Playfair Display',serif;
+    font-size:13px;font-weight:700;
+    color:var(--dark);
+  }
+  .rodape-brand span{color:var(--orange)}
+  .rodape-info{
+    font-size:10.5px;
+    color:var(--text-3);
+    text-align:right;
+    line-height:1.7;
+  }
 
   @media print{
-    body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    .page{padding:32px 28px}
-    .header{-webkit-print-color-adjust:exact}
-    .sintese{-webkit-print-color-adjust:exact}
+    body{background:#fff}
+    .capa,.sintese{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .page{padding:0 0 40px}
   }
 </style>
 </head>
 <body>
 <div class="page">
 
-  <div class="header">
-    <div class="header-title">DIAGNÓSTICO 5D</div>
-    <div class="header-sub">Relatório Personalizado &bull; ${esc(d.nome)}</div>
-    <div class="header-brand">@sandrolopez &bull; Governo &amp; Finanças</div>
+  <div class="capa">
+    <div class="capa-eyebrow">Diagnóstico 5D &bull; Relatório Personalizado</div>
+    <div class="capa-title">Diagnóstico<br>5D</div>
+    <div class="capa-subtitle">Governo Interior &amp; Prosperidade</div>
+    <div class="capa-meta">
+      <div class="capa-avatar">${esc(primeiroNome[0] || '?')}</div>
+      <div>
+        <div class="capa-nome">${esc(d.nome)}</div>
+        <div class="capa-brand">@sandrolopez &bull; Governo &amp; Finanças</div>
+      </div>
+    </div>
   </div>
 
   <div class="intro">
-    ${esc(primeiroNome)}, o que você vai ler aqui não é um relatório técnico. É um espelho. Leia com calma, sem pressa — e sem se defender do que aparecer.
+    <p class="intro-text">${esc(primeiroNome)}, o que você vai ler aqui não é um relatório técnico. É um espelho. Leia com calma, sem pressa — e sem se defender do que aparecer.</p>
   </div>
 
   ${secoesHTML}
@@ -404,13 +635,15 @@ function gerarDevolutivaPDF(d, b6) {
   ${passosHTML}
 
   <div class="rodape">
-    <strong>@sandrolopez</strong> &bull; Governo &amp; Finanças &bull; Diagnóstico 5D<br>
-    Este relatório é pessoal e intransferível. Foi produzido com base nas suas respostas.<br>
-    <span style="color:#bbb">Gerado em ${new Date().toLocaleString('pt-BR')}</span>
+    <div class="rodape-brand">Sandro<span>Lopez</span></div>
+    <div class="rodape-info">
+      Relatório pessoal e intransferível<br>
+      Gerado em ${new Date().toLocaleDateString('pt-BR')}
+    </div>
   </div>
 
 </div>
-<script>window.onload = () => { window.print(); }<\/script>
+<script>window.onload=()=>{window.print()}<\/script>
 </body>
 </html>`;
 
