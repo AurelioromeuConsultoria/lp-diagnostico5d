@@ -247,6 +247,130 @@ function abrirPDF(d) {
   win.document.close();
 }
 
+const AREAS_DEVOLUTIVA = [
+  { key: 'b6GovFinanceiro',   num: '01', titulo: 'GOVERNO FINANCEIRO' },
+  { key: 'b6IdentidadeAuto',  num: '02', titulo: 'IDENTIDADE E AUTOCONCEITO' },
+  { key: 'b6GovInterior',     num: '03', titulo: 'GOVERNO INTERIOR E CONSTÂNCIA' },
+  { key: 'b6Ambiente',        num: '04', titulo: 'AMBIENTE E ALIANÇAS' },
+  { key: 'b6Espiritualidade', num: '05', titulo: 'ESPIRITUALIDADE E DIREÇÃO' },
+];
+
+const STATUS_LABEL = { ok: 'Ponto Forte', atencao: 'Atenção', critico: 'Quebra Crítica' };
+const STATUS_COLOR = { ok: '#1a7a4a', atencao: '#92600a', critico: '#991b1b' };
+const STATUS_BG    = { ok: '#f0fdf4', atencao: '#fffbeb', critico: '#fef2f2' };
+
+function gerarDevolutivaPDF(d, b6) {
+  const esc  = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const nl2p = s => s ? s.split(/\n+/).filter(Boolean).map(p => `<p>${esc(p)}</p>`).join('') : '';
+  const primeiroNome = (d.nome || '').split(' ')[0];
+
+  const secoesHTML = AREAS_DEVOLUTIVA.map(area => {
+    const status = b6[`${area.key}Status`];
+    const quebra = b6[`${area.key}Quebra`] || '';
+    const label  = STATUS_LABEL[status] || '';
+    const cor    = STATUS_COLOR[status] || '#555';
+    const bg     = STATUS_BG[status]    || '#f9f9f9';
+    const temConteudo = status || quebra;
+    if (!temConteudo) return '';
+    return `
+      <div class="secao">
+        <div class="secao-header">
+          <div class="secao-num">${area.num}</div>
+          <div class="secao-titulo">${area.titulo}</div>
+        </div>
+        ${label ? `
+        <div class="diagnostico-tag" style="color:${cor};background:${bg};border-left:4px solid ${cor}">
+          <em>DIAGNÓSTICO: ${esc(label)}${quebra ? ' — ' + esc(quebra.split('\n')[0].slice(0, 120)) + (quebra.length > 120 ? '…' : '') : ''}</em>
+        </div>` : ''}
+        <div class="secao-corpo">${nl2p(quebra)}</div>
+      </div>`;
+  }).join('');
+
+  const sinteseHTML = b6.b6SinteseGeral ? `
+    <div class="sintese">
+      <div class="sintese-titulo">SÍNTESE GERAL</div>
+      <div class="sintese-corpo">${nl2p(b6.b6SinteseGeral)}</div>
+    </div>` : '';
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<title>Diagnóstico 5D — ${esc(d.nome)}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;font-size:13.5px;line-height:1.75}
+  .page{max-width:720px;margin:0 auto;padding:48px 40px}
+
+  /* HEADER */
+  .header{text-align:center;background:#1e2d4a;color:#fff;padding:36px 32px 28px;border-radius:4px;margin-bottom:32px}
+  .header-title{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;letter-spacing:.06em;margin-bottom:6px}
+  .header-sub{font-size:13px;color:#c8b97a;letter-spacing:.08em;margin-bottom:4px}
+  .header-brand{font-size:11.5px;color:#8fa3c8;letter-spacing:.04em}
+
+  /* INTRO */
+  .intro{font-style:italic;color:#444;border-left:3px solid #c8b97a;padding:12px 16px;margin-bottom:36px;background:#fffdf5;border-radius:0 4px 4px 0;font-size:13px;line-height:1.8}
+
+  /* SEÇÃO */
+  .secao{margin-bottom:36px;border-bottom:1px solid #e8e8e8;padding-bottom:32px}
+  .secao:last-of-type{border-bottom:none}
+  .secao-header{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+  .secao-num{background:#1e2d4a;color:#c8b97a;font-family:'Playfair Display',serif;font-weight:700;font-size:16px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:3px;flex-shrink:0}
+  .secao-titulo{font-family:'Inter',sans-serif;font-weight:700;font-size:14px;letter-spacing:.1em;color:#1e2d4a;text-transform:uppercase}
+  .diagnostico-tag{font-size:12.5px;padding:8px 14px;margin-bottom:14px;border-radius:0 4px 4px 0;line-height:1.6}
+  .secao-corpo p{color:#333;margin-bottom:10px;text-align:justify}
+
+  /* SÍNTESE */
+  .sintese{background:#1e2d4a;color:#fff;border-radius:6px;padding:28px 32px;margin:40px 0 36px}
+  .sintese-titulo{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;text-align:center;letter-spacing:.08em;margin-bottom:16px;color:#c8b97a}
+  .sintese-corpo p{color:#d4dde8;margin-bottom:10px;line-height:1.8;text-align:justify}
+
+  /* RODAPÉ */
+  .rodape{text-align:center;font-size:10.5px;color:#888;border-top:1px solid #e8e8e8;padding-top:16px;margin-top:40px;line-height:1.8}
+  .rodape strong{color:#1e2d4a}
+
+  @media print{
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .page{padding:32px 28px}
+    .header{-webkit-print-color-adjust:exact}
+    .sintese{-webkit-print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-title">DIAGNÓSTICO 5D</div>
+    <div class="header-sub">Relatório Personalizado &bull; ${esc(d.nome)}</div>
+    <div class="header-brand">@sandrolopez &bull; Governo &amp; Finanças</div>
+  </div>
+
+  <div class="intro">
+    ${esc(primeiroNome)}, o que você vai ler aqui não é um relatório técnico. É um espelho. Leia com calma, sem pressa — e sem se defender do que aparecer.
+  </div>
+
+  ${secoesHTML}
+  ${sinteseHTML}
+
+  <div class="rodape">
+    <strong>@sandrolopez</strong> &bull; Governo &amp; Finanças &bull; Diagnóstico 5D<br>
+    Este relatório é pessoal e intransferível. Foi produzido com base nas suas respostas.<br>
+    <span style="color:#bbb">Gerado em ${new Date().toLocaleString('pt-BR')}</span>
+  </div>
+
+</div>
+<script>window.onload = () => { window.print(); }<\/script>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+}
+
 // ─── StatCard ────────────────────────────────────────────────────────────────
 
 function StatCard({ num, label, sub }) {
@@ -671,11 +795,16 @@ function SubmissionCard({ d, onRefresh }) {
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 mt-2">
-                {savedB6 && <span className="text-xs font-semibold text-green-600">✓ Salvo com sucesso</span>}
-                <Button onClick={saveBloco6} disabled={savingB6}>
-                  {savingB6 ? 'Salvando...' : 'Salvar diagnóstico'}
+              <div className="flex items-center justify-between gap-3 mt-2">
+                <Button variant="outline" onClick={() => gerarDevolutivaPDF(d, b6)}>
+                  Gerar Devolutiva PDF
                 </Button>
+                <div className="flex items-center gap-3">
+                  {savedB6 && <span className="text-xs font-semibold text-green-600">✓ Salvo com sucesso</span>}
+                  <Button onClick={saveBloco6} disabled={savingB6}>
+                    {savingB6 ? 'Salvando...' : 'Salvar diagnóstico'}
+                  </Button>
+                </div>
               </div>
             </div>
 
