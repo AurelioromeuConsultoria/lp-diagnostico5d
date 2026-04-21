@@ -22,18 +22,25 @@ RUN dotnet publish Diagnostico5D.API.csproj -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
-# Chromium for server-side PDF generation
+# Real browser for server-side PDF generation.
+# Ubuntu 24.04 maps `chromium` to a snap shim, which does not work in containers.
 RUN apt-get update && apt-get install -y \
-    chromium \
+    ca-certificates \
+    curl \
+    gnupg \
     fonts-liberation \
     --no-install-recommends \
-    && CHROME_BIN="$(command -v chromium || command -v chromium-browser || command -v google-chrome || command -v google-chrome-stable)" \
-    && test -n "$CHROME_BIN" \
-    && ln -sf "$CHROME_BIN" /usr/bin/chromium \
-    && /usr/bin/chromium --version \
+    && install -d -m 0755 /etc/apt/keyrings \
+    && curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /etc/apt/keyrings/google-chrome.gpg \
+    && chmod a+r /etc/apt/keyrings/google-chrome.gpg \
+    && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable --no-install-recommends \
+    && ln -sf /usr/bin/google-chrome-stable /usr/bin/chromium \
+    && /usr/bin/google-chrome-stable --version \
     && rm -rf /var/lib/apt/lists/*
 
-ENV CHROMIUM_PATH=/usr/bin/chromium
+ENV CHROMIUM_PATH=/usr/bin/google-chrome-stable
 
 COPY --from=api-build /app/publish .
 
