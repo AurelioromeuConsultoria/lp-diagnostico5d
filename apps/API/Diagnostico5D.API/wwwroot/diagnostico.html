@@ -1258,7 +1258,7 @@
   </div>
 
   <script>
-    const LS_KEY = 'diagnostico5d_rascunho';
+    const LS_KEY = `diagnostico5d_rascunho:${window.location.host}`;
     let currentStep   = 0;
     let diagnosticoId = null;
 
@@ -1323,6 +1323,58 @@
       data.diagnosticoId = diagnosticoId;
       data.savedAt       = new Date().toISOString();
       try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch (_) {}
+    }
+
+    function persistDiagnosticoId(id) {
+      diagnosticoId = id;
+      try {
+        const updated = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+        updated.diagnosticoId = id;
+        updated.savedAt = new Date().toISOString();
+        localStorage.setItem(LS_KEY, JSON.stringify(updated));
+      } catch (_) {}
+    }
+
+    async function createSubmission(payload, nextStep) {
+      const response = await fetch('/api/diagnostico', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      });
+
+      if (!response.ok) throw new Error('create_failed');
+
+      const json = await response.json();
+      if (json.id) {
+        persistDiagnosticoId(json.id);
+        if (typeof nextStep === 'number') saveLocal(nextStep);
+      }
+
+      return response;
+    }
+
+    async function upsertSubmission(payload, nextStep) {
+      if (!diagnosticoId) return createSubmission(payload, nextStep);
+
+      const response = await fetch(`/api/diagnostico/${diagnosticoId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      });
+
+      if (response.status === 404) {
+        diagnosticoId = null;
+        try {
+          const updated = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+          delete updated.diagnosticoId;
+          localStorage.setItem(LS_KEY, JSON.stringify(updated));
+        } catch (_) {}
+        return createSubmission(payload, nextStep);
+      }
+
+      return response;
     }
 
     // ─── Session restore ──────────────────────────────
@@ -1400,34 +1452,7 @@
       const lsData = { ...payload, currentStep: nextStep, diagnosticoId, savedAt: new Date().toISOString() };
       try { localStorage.setItem(LS_KEY, JSON.stringify(lsData)); } catch (_) {}
 
-      if (diagnosticoId) {
-        // Update existing record
-        fetch(`/api/diagnostico/${diagnosticoId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          keepalive: true,
-        }).catch(() => {});
-      } else {
-        // Create new record and store the returned ID
-        fetch('/api/diagnostico', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          keepalive: true,
-        })
-        .then(r => r.json())
-        .then(json => {
-          if (json.id) {
-            diagnosticoId = json.id;
-            // Re-save localStorage with the new ID
-            const updated = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
-            updated.diagnosticoId = diagnosticoId;
-            localStorage.setItem(LS_KEY, JSON.stringify(updated));
-          }
-        })
-        .catch(() => {});
-      }
+      upsertSubmission(payload, nextStep).catch(() => {});
     }
 
     // ─── Modal state ──────────────────────────────────
@@ -1565,20 +1590,7 @@
       payload.ultimo_bloco = 5;
 
       try {
-        let res;
-        if (diagnosticoId) {
-          res = await fetch(`/api/diagnostico/${diagnosticoId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-        } else {
-          res = await fetch('/api/diagnostico', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-        }
+        const res = await upsertSubmission(payload, 5);
 
         if (!res.ok) throw new Error('Server error');
 
