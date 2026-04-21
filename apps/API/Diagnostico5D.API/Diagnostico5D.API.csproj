@@ -17,4 +17,22 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <AdminDistDir>$(MSBuildProjectDirectory)/../../Admin/dist</AdminDistDir>
+  </PropertyGroup>
+
+  <Target Name="EnsureAdminBuildPresent" BeforeTargets="Publish">
+    <Error
+      Condition="!Exists('$(AdminDistDir)/index.html')"
+      Text="Admin build não encontrado em '$(AdminDistDir)'. Rode 'npm ci &amp;&amp; npm run build' em apps/Admin antes do publish, ou use o Dockerfile da raiz." />
+  </Target>
+
+  <ItemGroup Condition="Exists('$(AdminDistDir)/index.html')">
+    <Content Include="$(AdminDistDir)/**">
+      <Link>wwwroot/admin/%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

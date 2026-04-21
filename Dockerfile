@@ -12,10 +12,11 @@ RUN npm run build && \
 # ── Stage 2: Build .NET API ─────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS api-build
 WORKDIR /src
-COPY apps/API/Diagnostico5D.API/Diagnostico5D.API.csproj ./
-RUN dotnet restore
-COPY apps/API/Diagnostico5D.API .
-RUN dotnet publish -c Release -o /app/publish
+COPY apps/API/Diagnostico5D.API/ apps/API/Diagnostico5D.API/
+COPY --from=admin-build /admin/dist apps/Admin/dist
+WORKDIR /src/apps/API/Diagnostico5D.API
+RUN dotnet restore Diagnostico5D.API.csproj
+RUN dotnet publish Diagnostico5D.API.csproj -c Release -o /app/publish
 
 # ── Stage 3: Runtime ────────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
@@ -35,9 +36,6 @@ COPY --from=api-build /app/publish .
 # Páginas estáticas
 COPY diagnostico.html ./wwwroot/diagnostico.html
 COPY index.html       ./wwwroot/index.html
-
-# Admin React build → /admin
-COPY --from=admin-build /admin/dist ./wwwroot/admin
 
 # Diretório persistente para SQLite e PDFs gerados
 # ⚠️  Monte um volume neste caminho no Coolify/Docker:
