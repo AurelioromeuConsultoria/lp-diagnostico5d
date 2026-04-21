@@ -35,6 +35,8 @@ public class DevolutivaPdfService(IConfiguration configuration, ILogger<Devoluti
 
             var chromiumPath = Environment.GetEnvironmentVariable("CHROMIUM_PATH");
             string[] sandboxArgs = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"];
+            logger.LogInformation("Gerando PDF para submission {SubmissionId}. PdfDir={PdfDir} CHROMIUM_PATH={ChromiumPath}",
+                s.Id, _pdfDir, chromiumPath ?? "(null)");
 
             LaunchOptions launchOpts;
             if (!string.IsNullOrEmpty(chromiumPath) && File.Exists(chromiumPath))
@@ -59,11 +61,13 @@ public class DevolutivaPdfService(IConfiguration configuration, ILogger<Devoluti
 
             await using var browser = await Puppeteer.LaunchAsync(launchOpts);
             await using var page = await browser.NewPageAsync();
+            page.DefaultNavigationTimeout = 60_000;
+            page.DefaultTimeout = 60_000;
 
             await page.SetContentAsync(html, new NavigationOptions
             {
                 WaitUntil = [WaitUntilNavigation.Networkidle2],
-                Timeout = 30_000
+                Timeout = 60_000
             });
 
             await page.PdfAsync(filePath, new PdfOptions
@@ -298,8 +302,6 @@ public class DevolutivaPdfService(IConfiguration configuration, ILogger<Devoluti
             <head>
             <meta charset="UTF-8"/>
             <title>Diagnóstico 5D — {Esc(s.Nome)}</title>
-            <link rel="preconnect" href="https://fonts.googleapis.com"/>
-            <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"/>
             <style>{Css}</style>
             </head>
             <body>

@@ -145,7 +145,17 @@ public class DiagnosticoController(ISubmissionService service) : ControllerBase
     [Authorize]
     public async Task<IActionResult> GerarPdf(int id)
     {
-        var (path, error) = await service.GerarPdfAsync(id);
+        (string? path, string? error) result;
+        try
+        {
+            result = await service.GerarPdfAsync(id);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+
+        var (path, error) = result;
         if (path is null) return NotFound(new { error });
 
         var submission = await service.GetByIdAsync(id);
