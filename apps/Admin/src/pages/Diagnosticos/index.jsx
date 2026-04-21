@@ -1107,6 +1107,7 @@ function SubmissionCard({ d, onRefresh }) {
                     onClick={async () => {
                       setGerandoPdf(true);
                       try {
+                        await diagnosticoApi.updateBloco6(d.id, b6);
                         const res = await diagnosticoApi.gerarPdf(d.id);
                         const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
                         const a = document.createElement('a');
@@ -1116,6 +1117,7 @@ function SubmissionCard({ d, onRefresh }) {
                         a.click();
                         document.body.removeChild(a);
                         URL.revokeObjectURL(url);
+                        onRefresh();
                       } catch {
                         toast.error('Erro ao gerar PDF no servidor');
                       } finally { setGerandoPdf(false); }
@@ -1128,8 +1130,10 @@ function SubmissionCard({ d, onRefresh }) {
                     onClick={async () => {
                       setEnviandoWpp(true);
                       try {
+                        await diagnosticoApi.updateBloco6(d.id, b6);
                         await diagnosticoApi.enviarDevolutiva(d.id);
                         toast.success('Devolutiva enviada por WhatsApp');
+                        onRefresh();
                       } catch (e) {
                         toast.error(e?.response?.data?.error || 'Erro ao enviar devolutiva');
                       } finally { setEnviandoWpp(false); }
