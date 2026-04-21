@@ -3,7 +3,9 @@ using Diagnostico5D.API.Data;
 using Diagnostico5D.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -145,20 +147,22 @@ app.UseCors("DefaultPolicy");
 
 // Serve static files BEFORE authentication (correct ASP.NET Core order)
 // Cache-Control: no-cache for HTML, immutable for hashed assets
+static void ApplyStaticCacheHeaders(StaticFileResponseContext ctx)
+{
+    var headers = ctx.Context.Response.Headers;
+    var ext = Path.GetExtension(ctx.File.Name).ToLowerInvariant();
+    // HTML: never cache (so new deployments always fetch fresh asset URLs)
+    if (ext == ".html")
+        headers.CacheControl = "no-cache, no-store, must-revalidate";
+    // Hashed assets (JS/CSS): immutable forever (filename changes on content change)
+    else if (ext is ".js" or ".css" or ".woff" or ".woff2" or ".ttf" or ".ico" or ".png" or ".svg" or ".webp")
+        headers.CacheControl = "public, max-age=31536000, immutable";
+}
+
 app.UseDefaultFiles();
 app.UseStaticFiles(new StaticFileOptions
 {
-    OnPrepareResponse = ctx =>
-    {
-        var headers = ctx.Context.Response.Headers;
-        var ext = Path.GetExtension(ctx.File.Name).ToLowerInvariant();
-        // HTML: never cache (so new deployments always fetch fresh asset URLs)
-        if (ext == ".html")
-            headers.CacheControl = "no-cache, no-store, must-revalidate";
-        // Hashed assets (JS/CSS): immutable forever (filename changes on content change)
-        else if (ext is ".js" or ".css" or ".woff" or ".woff2" or ".ttf" or ".ico" or ".png" or ".svg" or ".webp")
-            headers.CacheControl = "public, max-age=31536000, immutable";
-    }
+    OnPrepareResponse = ApplyStaticCacheHeaders
 });
 
 app.UseAuthentication();
@@ -181,6 +185,18 @@ if (Directory.Exists(adminAssetsPath))
     logger.LogInformation("Admin assets count={AdminAssetsCount} sample=[{AdminAssetsSample}]",
         adminAssetFiles.Length,
         string.Join(", ", adminAssetSample));
+}
+
+// Explicit /admin static mapping. This avoids the SPA fallback swallowing asset requests
+// when the admin bundle is published under wwwroot/admin inside the container.
+if (Directory.Exists(adminRootPath))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(adminRootPath),
+        RequestPath = "/admin",
+        OnPrepareResponse = ApplyStaticCacheHeaders
+    });
 }
 
 // SPA fallback for admin React app — only for route paths, not asset files (.js/.css/etc.)
