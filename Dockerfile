@@ -27,6 +27,10 @@ RUN apt-get update && apt-get install -y \
     chromium \
     fonts-liberation \
     --no-install-recommends \
+    && CHROME_BIN="$(command -v chromium || command -v chromium-browser || command -v google-chrome || command -v google-chrome-stable)" \
+    && test -n "$CHROME_BIN" \
+    && ln -sf "$CHROME_BIN" /usr/bin/chromium \
+    && /usr/bin/chromium --version \
     && rm -rf /var/lib/apt/lists/*
 
 ENV CHROMIUM_PATH=/usr/bin/chromium
