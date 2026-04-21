@@ -36,6 +36,12 @@ public class EvolutionApiService : IEvolutionApiService
         string mensagem,
         CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(_settings.BaseUrl))
+            return new EvolutionApiResult { Sucesso = false, MensagemErro = "Evolution API BaseUrl não configurada", StatusCode = 500 };
+
+        if (string.IsNullOrWhiteSpace(_settings.InstanceName))
+            return new EvolutionApiResult { Sucesso = false, MensagemErro = "Evolution API InstanceName não configurada", StatusCode = 500 };
+
         if (string.IsNullOrWhiteSpace(numero))
             return new EvolutionApiResult { Sucesso = false, MensagemErro = "Número não pode ser vazio", StatusCode = 400 };
 
@@ -115,6 +121,16 @@ public class EvolutionApiService : IEvolutionApiService
 
                 await Task.Delay(ObterBackoff(tentativa), cancellationToken);
             }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Configuração inválida da Evolution API");
+                return new EvolutionApiResult { Sucesso = false, MensagemErro = ex.Message, StatusCode = 500 };
+            }
+            catch (UriFormatException ex)
+            {
+                _logger.LogError(ex, "URL inválida da Evolution API: {BaseUrl}", _settings.BaseUrl);
+                return new EvolutionApiResult { Sucesso = false, MensagemErro = "Evolution API BaseUrl inválida", StatusCode = 500 };
+            }
         }
 
         return new EvolutionApiResult { Sucesso = false, MensagemErro = "Falha após todas as tentativas", StatusCode = 500 };
@@ -127,6 +143,12 @@ public class EvolutionApiService : IEvolutionApiService
         string? caption = null,
         CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(_settings.BaseUrl))
+            return new EvolutionApiResult { Sucesso = false, MensagemErro = "Evolution API BaseUrl não configurada", StatusCode = 500 };
+
+        if (string.IsNullOrWhiteSpace(_settings.InstanceName))
+            return new EvolutionApiResult { Sucesso = false, MensagemErro = "Evolution API InstanceName não configurada", StatusCode = 500 };
+
         if (string.IsNullOrWhiteSpace(numero))
             return new EvolutionApiResult { Sucesso = false, MensagemErro = "Número não pode ser vazio", StatusCode = 400 };
 
@@ -198,6 +220,16 @@ public class EvolutionApiService : IEvolutionApiService
                 if (tentativa >= _settings.MaxRetries)
                     return new EvolutionApiResult { Sucesso = false, MensagemErro = ex.Message, StatusCode = 0 };
                 await Task.Delay(ObterBackoff(tentativa), cancellationToken);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Configuração inválida da Evolution API");
+                return new EvolutionApiResult { Sucesso = false, MensagemErro = ex.Message, StatusCode = 500 };
+            }
+            catch (UriFormatException ex)
+            {
+                _logger.LogError(ex, "URL inválida da Evolution API: {BaseUrl}", _settings.BaseUrl);
+                return new EvolutionApiResult { Sucesso = false, MensagemErro = "Evolution API BaseUrl inválida", StatusCode = 500 };
             }
         }
 

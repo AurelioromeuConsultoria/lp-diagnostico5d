@@ -130,8 +130,15 @@ public class DiagnosticoController(ISubmissionService service) : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Nome))
             return BadRequest(new { error = "Nome é obrigatório." });
 
-        var result = await service.CriarConvidadoAsync(request);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        try
+        {
+            var result = await service.CriarConvidadoAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
     }
 
     [HttpPost("{id:int}/pdf")]
