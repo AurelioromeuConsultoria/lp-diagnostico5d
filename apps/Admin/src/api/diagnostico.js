@@ -13,7 +13,6 @@ export const diagnosticoApi = {
   reenviarWpp:     (id)       => api.post(`/diagnostico/${id}/whatsapp/reenviar`),
   updateFase:      (id, fase) => api.patch(`/diagnostico/${id}/fase`, { fase }),
   criarConvidado:    (data) => api.post('/diagnostico/convidado', data),
-  gerarPdf:          (id)   => api.post(`/diagnostico/${id}/pdf`),
-  downloadPdfUrl:    (id)   => `/api/diagnostico/${id}/pdf/download`,
+  gerarPdf:          (id)   => api.post(`/diagnostico/${id}/pdf`, {}, { responseType: 'blob' }),
   enviarDevolutiva:  (id)   => api.post(`/diagnostico/${id}/enviar-devolutiva`),
 };

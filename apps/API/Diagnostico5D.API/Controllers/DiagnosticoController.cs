@@ -140,19 +140,10 @@ public class DiagnosticoController(ISubmissionService service) : ControllerBase
     {
         var (path, error) = await service.GerarPdfAsync(id);
         if (path is null) return NotFound(new { error });
-        return Ok(new { success = true });
-    }
 
-    [HttpGet("{id:int}/pdf/download")]
-    [Authorize]
-    public async Task<IActionResult> DownloadPdf(int id)
-    {
         var submission = await service.GetByIdAsync(id);
-        if (submission?.DevolutivaPdfPath is null || !System.IO.File.Exists(submission.DevolutivaPdfPath))
-            return NotFound(new { error = "PDF não encontrado. Gere primeiro." });
-
-        var bytes = await System.IO.File.ReadAllBytesAsync(submission.DevolutivaPdfPath);
-        var nomeArquivo = $"Devolutiva-{string.Concat(submission.Nome.Split(' ').Take(2))}.pdf";
+        var nomeArquivo = $"Devolutiva-{string.Concat((submission?.Nome ?? "PDF").Split(' ').Take(2))}.pdf";
+        var bytes = await System.IO.File.ReadAllBytesAsync(path);
         return File(bytes, "application/pdf", nomeArquivo);
     }
 

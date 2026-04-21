@@ -1107,8 +1107,15 @@ function SubmissionCard({ d, onRefresh }) {
                     onClick={async () => {
                       setGerandoPdf(true);
                       try {
-                        await diagnosticoApi.gerarPdf(d.id);
-                        window.open(diagnosticoApi.downloadPdfUrl(d.id), '_blank');
+                        const res = await diagnosticoApi.gerarPdf(d.id);
+                        const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `Devolutiva-${d.nome.split(' ').slice(0,2).join('')}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
                       } catch {
                         toast.error('Erro ao gerar PDF no servidor');
                       } finally { setGerandoPdf(false); }
