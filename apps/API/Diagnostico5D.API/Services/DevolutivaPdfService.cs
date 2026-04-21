@@ -14,6 +14,14 @@ public class DevolutivaPdfService(IConfiguration configuration, ILogger<Devoluti
     : IDevolutivaPdfService
 {
     private readonly string _pdfDir = ResolvePdfDir(configuration);
+    private static readonly string[] KnownChromiumPaths =
+    [
+        "/usr/bin/chromium",
+        "/usr/bin/chromium-browser",
+        "/usr/bin/google-chrome",
+        "/usr/bin/google-chrome-stable",
+        "/snap/bin/chromium"
+    ];
 
     private static string ResolvePdfDir(IConfiguration cfg)
     {
@@ -33,7 +41,7 @@ public class DevolutivaPdfService(IConfiguration configuration, ILogger<Devoluti
             var filePath = Path.Combine(_pdfDir, $"devolutiva-{s.Id}.pdf");
             var html = BuildHtml(s);
 
-            var chromiumPath = Environment.GetEnvironmentVariable("CHROMIUM_PATH");
+            var chromiumPath = ResolveChromiumPath();
             string[] sandboxArgs = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"];
             logger.LogInformation("Gerando PDF para submission {SubmissionId}. PdfDir={PdfDir} CHROMIUM_PATH={ChromiumPath}",
                 s.Id, _pdfDir, chromiumPath ?? "(null)");
@@ -48,7 +56,7 @@ public class DevolutivaPdfService(IConfiguration configuration, ILogger<Devoluti
                 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
                 if (!string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase))
                     throw new InvalidOperationException(
-                        "Chromium não encontrado. Configure a variável de ambiente CHROMIUM_PATH no servidor.");
+                        "Chromium não encontrado. Configure CHROMIUM_PATH ou instale o navegador em um caminho padrão do servidor.");
 
                 logger.LogInformation("CHROMIUM_PATH não definido — baixando Chromium (apenas em desenvolvimento)");
                 using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
@@ -85,6 +93,15 @@ public class DevolutivaPdfService(IConfiguration configuration, ILogger<Devoluti
             logger.LogError(ex, "Erro ao gerar PDF para submission {Id}", s.Id);
             throw new InvalidOperationException($"Falha ao gerar PDF: {ex.Message}", ex);
         }
+    }
+
+    private static string? ResolveChromiumPath()
+    {
+        var configured = Environment.GetEnvironmentVariable("CHROMIUM_PATH");
+        if (!string.IsNullOrWhiteSpace(configured) && File.Exists(configured))
+            return configured;
+
+        return KnownChromiumPaths.FirstOrDefault(File.Exists);
     }
 
     // ── Template ──────────────────────────────────────────────────────────────
