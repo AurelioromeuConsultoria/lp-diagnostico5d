@@ -306,8 +306,11 @@ public class SubmissionService(
 
         var primeiroNome = s.Nome.Split(' ')[0];
         var caption =
-            $"{primeiroNome}, aqui está o seu relatório personalizado do Diagnóstico 5D.\n\n" +
-            "Este documento foi preparado especialmente com base nas suas respostas. Leia com atenção — ele revela padrões importantes sobre o seu governo interior e o seu próximo nível.";
+            $"{primeiroNome}, seu Diagnóstico 5D está aqui. 🎯\n\n" +
+            "Cada resposta que você deu foi analisada com cuidado — e o que está nesse relatório foi preparado especialmente para você.\n\n" +
+            "Leia com calma, sem pressa. Às vezes o que mais transforma não é o que a gente espera encontrar.\n\n" +
+            "Qualquer dúvida ou insight que surgir, pode trazer. Estou aqui.\n\n" +
+            "— Sandro Lopez";
 
         var nomeArquivo = $"Devolutiva-{string.Concat(s.Nome.Split(' ').Take(2))}.pdf";
 
