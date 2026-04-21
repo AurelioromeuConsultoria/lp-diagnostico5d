@@ -4,7 +4,10 @@ WORKDIR /admin
 COPY apps/Admin/package*.json ./
 RUN npm ci
 COPY apps/Admin .
-RUN npm run build
+RUN npm run build && \
+    test -d dist/assets && \
+    echo "Admin build OK — $(ls dist/assets | wc -l) assets" || \
+    (echo "ERROR: Admin build failed or produced no assets" && exit 1)
 
 # ── Stage 2: Build .NET API ─────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS api-build

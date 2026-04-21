@@ -2,6 +2,7 @@ using Diagnostico5D.API.Configuration;
 using Diagnostico5D.API.Data;
 using Diagnostico5D.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -163,7 +164,24 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// SPA fallback for admin React app — handles /admin and /admin/*
-app.MapFallbackToFile("/admin/{**path}", "admin/index.html");
+// SPA fallback for admin React app — only for route paths, not asset files (.js/.css/etc.)
+app.MapFallback("/admin/{**path}", async (HttpContext ctx) =>
+{
+    if (Path.HasExtension(ctx.Request.Path.Value))
+    {
+        ctx.Response.StatusCode = 404;
+        return;
+    }
+    var env = ctx.RequestServices.GetRequiredService<IWebHostEnvironment>();
+    var indexPath = Path.Combine(env.WebRootPath ?? "wwwroot", "admin", "index.html");
+    if (!File.Exists(indexPath))
+    {
+        ctx.Response.StatusCode = 503;
+        await ctx.Response.WriteAsync("Admin not deployed");
+        return;
+    }
+    ctx.Response.ContentType = "text/html; charset=utf-8";
+    await ctx.Response.SendFileAsync(indexPath);
+});
 
 app.Run();
