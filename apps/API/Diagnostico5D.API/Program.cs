@@ -83,6 +83,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+var logger = app.Logger;
 
 // ── Migrations on startup ──────────────────────────────────────────────
 using (var scope = app.Services.CreateScope())
@@ -163,6 +164,24 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// Startup diagnostics for the React admin bundle in production.
+var webRootPath = app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+var adminRootPath = Path.Combine(webRootPath, "admin");
+var adminAssetsPath = Path.Combine(adminRootPath, "assets");
+logger.LogInformation("Admin web root: {AdminRootPath} | exists={AdminRootExists}", adminRootPath, Directory.Exists(adminRootPath));
+logger.LogInformation("Admin assets path: {AdminAssetsPath} | exists={AdminAssetsExists}", adminAssetsPath, Directory.Exists(adminAssetsPath));
+if (Directory.Exists(adminAssetsPath))
+{
+    var adminAssetFiles = Directory.GetFiles(adminAssetsPath)
+        .Select(Path.GetFileName)
+        .OrderBy(name => name)
+        .ToArray();
+    var adminAssetSample = adminAssetFiles.Take(20).ToArray();
+    logger.LogInformation("Admin assets count={AdminAssetsCount} sample=[{AdminAssetsSample}]",
+        adminAssetFiles.Length,
+        string.Join(", ", adminAssetSample));
+}
 
 // SPA fallback for admin React app — only for route paths, not asset files (.js/.css/etc.)
 app.MapFallback("/admin/{**path}", async (HttpContext ctx) =>
