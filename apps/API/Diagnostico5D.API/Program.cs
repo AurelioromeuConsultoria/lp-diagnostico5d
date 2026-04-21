@@ -173,6 +173,7 @@ app.MapControllers();
 var webRootPath = app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
 var adminRootPath = Path.Combine(webRootPath, "admin");
 var adminAssetsPath = Path.Combine(adminRootPath, "assets");
+var contentTypeProvider = new FileExtensionContentTypeProvider();
 logger.LogInformation("Admin web root: {AdminRootPath} | exists={AdminRootExists}", adminRootPath, Directory.Exists(adminRootPath));
 logger.LogInformation("Admin assets path: {AdminAssetsPath} | exists={AdminAssetsExists}", adminAssetsPath, Directory.Exists(adminAssetsPath));
 if (Directory.Exists(adminAssetsPath))
@@ -198,6 +199,40 @@ if (Directory.Exists(adminRootPath))
         OnPrepareResponse = ApplyStaticCacheHeaders
     });
 }
+
+static bool TryResolveAdminFile(string rootPath, string relativePath, out string fullPath)
+{
+    fullPath = Path.GetFullPath(Path.Combine(rootPath, relativePath.Replace('/', Path.DirectorySeparatorChar)));
+    var normalizedRoot = Path.GetFullPath(rootPath) + Path.DirectorySeparatorChar;
+    return fullPath.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase) && File.Exists(fullPath);
+}
+
+IResult ServeAdminFile(string fullPath)
+{
+    if (!contentTypeProvider.TryGetContentType(fullPath, out var contentType))
+        contentType = "application/octet-stream";
+
+    return TypedResults.PhysicalFile(fullPath, contentType, enableRangeProcessing: false, lastModified: File.GetLastWriteTimeUtc(fullPath));
+}
+
+app.MapGet("/admin/assets/{**assetPath}", (string assetPath) =>
+{
+    if (string.IsNullOrWhiteSpace(assetPath) || !TryResolveAdminFile(adminAssetsPath, assetPath, out var fullPath))
+        return Results.NotFound();
+
+    return ServeAdminFile(fullPath);
+});
+
+app.MapGet("/admin/{fileName}", (string fileName) =>
+{
+    if (string.IsNullOrWhiteSpace(fileName) || fileName.Contains('/') || fileName.Contains('\\'))
+        return Results.NotFound();
+
+    if (!Path.HasExtension(fileName) || !TryResolveAdminFile(adminRootPath, fileName, out var fullPath))
+        return Results.NotFound();
+
+    return ServeAdminFile(fullPath);
+});
 
 // SPA fallback for admin React app — only for route paths, not asset files (.js/.css/etc.)
 app.MapFallback("/admin/{**path}", async (HttpContext ctx) =>
