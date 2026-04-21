@@ -34,6 +34,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // ── Services ───────────────────────────────────────────────────────────
 builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDevolutivaPdfService, DevolutivaPdfService>();
 
 // ── Evolution API ──────────────────────────────────────────────────────
 builder.Services.Configure<EvolutionApiSettings>(
@@ -120,6 +121,7 @@ using (var scope = app.Services.CreateScope())
         "ALTER TABLE Submissions RENAME COLUMN B6ProsperidadeStatus TO B6EspiritualidadeStatus",
         "ALTER TABLE Submissions RENAME COLUMN B6ProsperidadeQuebra TO B6EspiritualidadeQuebra",
         "ALTER TABLE Submissions RENAME COLUMN B6Gargalo TO B6SinteseGeral",
+        "ALTER TABLE Submissions ADD COLUMN DevolutivaPdfPath TEXT NULL",
         // Tabela de usuários
         @"CREATE TABLE IF NOT EXISTS Users (
             Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,

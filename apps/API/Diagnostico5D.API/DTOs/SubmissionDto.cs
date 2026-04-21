@@ -24,7 +24,8 @@ public record SubmissionDto(
     DateTime? WhatsappEnviadoEm,
     bool MentorRevisado,
     string? MentorObservacao,
-    string Fase
+    string Fase,
+    string? DevolutivaPdfPath
 );
 
 public record CreateSubmissionRequest(

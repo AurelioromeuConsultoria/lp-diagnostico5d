@@ -9,6 +9,7 @@ namespace Diagnostico5D.API.Services;
 public class SubmissionService(
     AppDbContext db,
     IEvolutionApiService evolutionApi,
+    IDevolutivaPdfService pdfService,
     ILogger<SubmissionService> logger,
     IConfiguration configuration) : ISubmissionService
 {
@@ -275,6 +276,44 @@ public class SubmissionService(
         return new CreateResponse(true, submission.Id);
     }
 
+    // ── Devolutiva PDF ────────────────────────────────────────────────────────
+
+    public async Task<(string? PdfPath, string? Error)> GerarPdfAsync(int id)
+    {
+        var s = await db.Submissions.FindAsync(id);
+        if (s is null) return (null, "Submission não encontrada");
+
+        var path = await pdfService.GerarAsync(s);
+        s.DevolutivaPdfPath = path;
+        await db.SaveChangesAsync();
+        return (path, null);
+    }
+
+    public async Task<EvolutionApiResult> EnviarDevolutivaAsync(int id)
+    {
+        var s = await db.Submissions.FindAsync(id);
+        if (s is null)
+            return new EvolutionApiResult { Sucesso = false, MensagemErro = "Submission não encontrada", StatusCode = 404 };
+
+        if (string.IsNullOrWhiteSpace(s.Whatsapp))
+            return new EvolutionApiResult { Sucesso = false, MensagemErro = "Número de WhatsApp não cadastrado", StatusCode = 400 };
+
+        if (string.IsNullOrEmpty(s.DevolutivaPdfPath) || !File.Exists(s.DevolutivaPdfPath))
+        {
+            s.DevolutivaPdfPath = await pdfService.GerarAsync(s);
+            await db.SaveChangesAsync();
+        }
+
+        var primeiroNome = s.Nome.Split(' ')[0];
+        var caption =
+            $"{primeiroNome}, aqui está o seu relatório personalizado do Diagnóstico 5D.\n\n" +
+            "Este documento foi preparado especialmente com base nas suas respostas. Leia com atenção — ele revela padrões importantes sobre o seu governo interior e o seu próximo nível.";
+
+        var nomeArquivo = $"Devolutiva-{string.Concat(s.Nome.Split(' ').Take(2))}.pdf";
+
+        return await evolutionApi.EnviarDocumentoAsync(s.Whatsapp, s.DevolutivaPdfPath, nomeArquivo, caption);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private async Task<EvolutionApiResult> EnviarMensagemConfirmacaoAsync(Submission submission)
@@ -309,6 +348,7 @@ public class SubmissionService(
         s.B6SinteseGeral,
         s.WhatsappEnviado, s.WhatsappEnviadoEm,
         s.MentorRevisado, s.MentorObservacao,
-        s.Fase ?? "novo"
+        s.Fase ?? "novo",
+        s.DevolutivaPdfPath
     );
 }

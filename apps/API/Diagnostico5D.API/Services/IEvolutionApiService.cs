@@ -6,6 +6,13 @@ public interface IEvolutionApiService
         string numero,
         string mensagem,
         CancellationToken cancellationToken = default);
+
+    Task<EvolutionApiResult> EnviarDocumentoAsync(
+        string numero,
+        string caminhoArquivo,
+        string nomeArquivo,
+        string? caption = null,
+        CancellationToken cancellationToken = default);
 }
 
 public class EvolutionApiResult

@@ -786,6 +786,8 @@ function SubmissionCard({ d, onRefresh }) {
   }));
   const [savingB6, setSavingB6] = useState(false);
   const [savedB6, setSavedB6] = useState(false);
+  const [gerandoPdf, setGerandoPdf] = useState(false);
+  const [enviandoWpp, setEnviandoWpp] = useState(false);
 
   // Sincroniza b6 quando dados da API atualizam (após salvar/refresh)
   useEffect(() => {
@@ -1095,9 +1097,40 @@ function SubmissionCard({ d, onRefresh }) {
 
 
               <div className="flex items-center justify-between gap-3 mt-2">
-                <Button variant="outline" onClick={() => gerarDevolutivaPDF(d, b6)}>
-                  Gerar Devolutiva PDF
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" onClick={() => gerarDevolutivaPDF(d, b6)}>
+                    Prévia PDF
+                  </Button>
+                  <Button
+                    variant="outline"
+                    disabled={gerandoPdf}
+                    onClick={async () => {
+                      setGerandoPdf(true);
+                      try {
+                        await diagnosticoApi.gerarPdf(d.id);
+                        window.open(diagnosticoApi.downloadPdfUrl(d.id), '_blank');
+                      } catch {
+                        toast.error('Erro ao gerar PDF no servidor');
+                      } finally { setGerandoPdf(false); }
+                    }}
+                  >
+                    {gerandoPdf ? 'Gerando...' : 'Salvar PDF'}
+                  </Button>
+                  <Button
+                    disabled={enviandoWpp}
+                    onClick={async () => {
+                      setEnviandoWpp(true);
+                      try {
+                        await diagnosticoApi.enviarDevolutiva(d.id);
+                        toast.success('Devolutiva enviada por WhatsApp');
+                      } catch (e) {
+                        toast.error(e?.response?.data?.error || 'Erro ao enviar devolutiva');
+                      } finally { setEnviandoWpp(false); }
+                    }}
+                  >
+                    {enviandoWpp ? 'Enviando...' : 'Enviar por WhatsApp'}
+                  </Button>
+                </div>
                 <div className="flex items-center gap-3">
                   {savedB6 && <span className="text-xs font-semibold text-green-600">✓ Salvo com sucesso</span>}
                   <Button onClick={saveBloco6} disabled={savingB6}>

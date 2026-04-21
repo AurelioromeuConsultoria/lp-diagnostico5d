@@ -12,5 +12,8 @@ export const diagnosticoApi = {
   updateMentor:    (id, data) => api.put(`/diagnostico/${id}/mentor`, data),
   reenviarWpp:     (id)       => api.post(`/diagnostico/${id}/whatsapp/reenviar`),
   updateFase:      (id, fase) => api.patch(`/diagnostico/${id}/fase`, { fase }),
-  criarConvidado:  (data)     => api.post('/diagnostico/convidado', data),
+  criarConvidado:    (data) => api.post('/diagnostico/convidado', data),
+  gerarPdf:          (id)   => api.post(`/diagnostico/${id}/pdf`),
+  downloadPdfUrl:    (id)   => `/api/diagnostico/${id}/pdf/download`,
+  enviarDevolutiva:  (id)   => api.post(`/diagnostico/${id}/enviar-devolutiva`),
 };

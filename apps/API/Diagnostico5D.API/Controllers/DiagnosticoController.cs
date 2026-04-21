@@ -133,4 +133,36 @@ public class DiagnosticoController(ISubmissionService service) : ControllerBase
         var result = await service.CriarConvidadoAsync(request);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
+
+    [HttpPost("{id:int}/pdf")]
+    [Authorize]
+    public async Task<IActionResult> GerarPdf(int id)
+    {
+        var (path, error) = await service.GerarPdfAsync(id);
+        if (path is null) return NotFound(new { error });
+        return Ok(new { success = true });
+    }
+
+    [HttpGet("{id:int}/pdf/download")]
+    [Authorize]
+    public async Task<IActionResult> DownloadPdf(int id)
+    {
+        var submission = await service.GetByIdAsync(id);
+        if (submission?.DevolutivaPdfPath is null || !System.IO.File.Exists(submission.DevolutivaPdfPath))
+            return NotFound(new { error = "PDF não encontrado. Gere primeiro." });
+
+        var bytes = await System.IO.File.ReadAllBytesAsync(submission.DevolutivaPdfPath);
+        var nomeArquivo = $"Devolutiva-{string.Concat(submission.Nome.Split(' ').Take(2))}.pdf";
+        return File(bytes, "application/pdf", nomeArquivo);
+    }
+
+    [HttpPost("{id:int}/enviar-devolutiva")]
+    [Authorize]
+    public async Task<IActionResult> EnviarDevolutiva(int id)
+    {
+        var resultado = await service.EnviarDevolutivaAsync(id);
+        if (!resultado.Sucesso)
+            return BadRequest(new { error = resultado.MensagemErro });
+        return Ok(new { success = true });
+    }
 }

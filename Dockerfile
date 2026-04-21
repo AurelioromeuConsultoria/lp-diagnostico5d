@@ -18,6 +18,15 @@ RUN dotnet publish -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
+# Chromium for server-side PDF generation
+RUN apt-get update && apt-get install -y \
+    chromium \
+    fonts-liberation \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV CHROMIUM_PATH=/usr/bin/chromium
+
 COPY --from=api-build /app/publish .
 
 # Páginas estáticas

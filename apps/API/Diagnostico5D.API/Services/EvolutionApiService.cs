@@ -120,6 +120,80 @@ public class EvolutionApiService : IEvolutionApiService
         return new EvolutionApiResult { Sucesso = false, MensagemErro = "Falha após todas as tentativas", StatusCode = 500 };
     }
 
+    public async Task<EvolutionApiResult> EnviarDocumentoAsync(
+        string numero,
+        string caminhoArquivo,
+        string nomeArquivo,
+        string? caption = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(numero))
+            return new EvolutionApiResult { Sucesso = false, MensagemErro = "Número não pode ser vazio", StatusCode = 400 };
+
+        if (!File.Exists(caminhoArquivo))
+            return new EvolutionApiResult { Sucesso = false, MensagemErro = "Arquivo PDF não encontrado", StatusCode = 400 };
+
+        string numeroFormatado;
+        try
+        {
+            numeroFormatado = TelefoneUtils.FormatarParaEvolutionApi(numero, _settings.CodigoPaisPadrao);
+        }
+        catch (Exception ex)
+        {
+            return new EvolutionApiResult { Sucesso = false, MensagemErro = $"Número inválido: {ex.Message}", StatusCode = 400 };
+        }
+
+        var bytes = await File.ReadAllBytesAsync(caminhoArquivo, cancellationToken);
+        var base64 = Convert.ToBase64String(bytes);
+
+        var request = new
+        {
+            number = numeroFormatado,
+            mediatype = "document",
+            media = base64,
+            fileName = nomeArquivo,
+            caption = caption ?? "",
+            delay = Math.Max(0, _settings.DelayMs),
+        };
+
+        var endpoint = $"message/sendMedia/{_settings.InstanceName}";
+
+        for (int tentativa = 1; tentativa <= _settings.MaxRetries; tentativa++)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(endpoint, request, cancellationToken);
+                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("Documento enviado para {Numero} ({Arquivo})", numeroFormatado, nomeArquivo);
+                    return new EvolutionApiResult { Sucesso = true, StatusCode = (int)response.StatusCode };
+                }
+
+                if (!IsTransientFailure(response.StatusCode) || tentativa >= _settings.MaxRetries)
+                    return new EvolutionApiResult { Sucesso = false, StatusCode = (int)response.StatusCode, MensagemErro = responseContent };
+
+                await Task.Delay(ObterBackoff(tentativa), cancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+                if (tentativa >= _settings.MaxRetries)
+                    return new EvolutionApiResult { Sucesso = false, MensagemErro = "Timeout", StatusCode = 408 };
+                await Task.Delay(ObterBackoff(tentativa), cancellationToken);
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Erro de conexão com Evolution API ao enviar documento");
+                if (tentativa >= _settings.MaxRetries)
+                    return new EvolutionApiResult { Sucesso = false, MensagemErro = ex.Message, StatusCode = 0 };
+                await Task.Delay(ObterBackoff(tentativa), cancellationToken);
+            }
+        }
+
+        return new EvolutionApiResult { Sucesso = false, MensagemErro = "Falha após todas as tentativas", StatusCode = 500 };
+    }
+
     private static bool IsTransientFailure(HttpStatusCode status)
     {
         var code = (int)status;

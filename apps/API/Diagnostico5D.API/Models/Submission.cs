@@ -59,6 +59,9 @@ public class Submission
     public string? B6EspiritualidadeQuebra { get; set; }
     public string? B6SinteseGeral { get; set; }
 
+    // Devolutiva PDF
+    public string? DevolutivaPdfPath { get; set; }
+
     // Fase do fluxo Kanban
     public string Fase { get; set; } = "novo";
 

@@ -16,4 +16,6 @@ public interface ISubmissionService
     Task<EvolutionApiResult> ReenviarWhatsappAsync(int id);
     Task<bool> UpdateFaseAsync(int id, string fase);
     Task<CreateResponse> CriarConvidadoAsync(CriarConvidadoRequest request);
+    Task<(string? PdfPath, string? Error)> GerarPdfAsync(int id);
+    Task<EvolutionApiResult> EnviarDevolutivaAsync(int id);
 }
