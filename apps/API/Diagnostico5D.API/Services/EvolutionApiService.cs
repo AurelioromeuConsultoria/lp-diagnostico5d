@@ -143,6 +143,16 @@ public class EvolutionApiService : IEvolutionApiService
             return new EvolutionApiResult { Sucesso = false, MensagemErro = $"Número inválido: {ex.Message}", StatusCode = 400 };
         }
 
+        const long MaxBytes = 25 * 1024 * 1024; // 25 MB
+        var fileInfo = new FileInfo(caminhoArquivo);
+        if (fileInfo.Length > MaxBytes)
+            return new EvolutionApiResult
+            {
+                Sucesso = false,
+                MensagemErro = $"PDF muito grande ({fileInfo.Length / 1024 / 1024} MB). Máximo permitido: 25 MB.",
+                StatusCode = 400
+            };
+
         var bytes = await File.ReadAllBytesAsync(caminhoArquivo, cancellationToken);
         var base64 = Convert.ToBase64String(bytes);
 

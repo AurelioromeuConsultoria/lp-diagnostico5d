@@ -27,43 +27,60 @@ public class DevolutivaPdfService(IConfiguration configuration, ILogger<Devoluti
 
     public async Task<string> GerarAsync(Submission s, CancellationToken ct = default)
     {
-        Directory.CreateDirectory(_pdfDir);
-        var filePath = Path.Combine(_pdfDir, $"devolutiva-{s.Id}.pdf");
-        var html = BuildHtml(s);
-
-        var chromiumPath = Environment.GetEnvironmentVariable("CHROMIUM_PATH");
-        string[] sandboxArgs = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"];
-
-        LaunchOptions launchOpts;
-        if (!string.IsNullOrEmpty(chromiumPath) && File.Exists(chromiumPath))
+        try
         {
-            launchOpts = new LaunchOptions { Headless = true, ExecutablePath = chromiumPath, Args = sandboxArgs };
+            Directory.CreateDirectory(_pdfDir);
+            var filePath = Path.Combine(_pdfDir, $"devolutiva-{s.Id}.pdf");
+            var html = BuildHtml(s);
+
+            var chromiumPath = Environment.GetEnvironmentVariable("CHROMIUM_PATH");
+            string[] sandboxArgs = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"];
+
+            LaunchOptions launchOpts;
+            if (!string.IsNullOrEmpty(chromiumPath) && File.Exists(chromiumPath))
+            {
+                launchOpts = new LaunchOptions { Headless = true, ExecutablePath = chromiumPath, Args = sandboxArgs };
+            }
+            else
+            {
+                var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+                if (!string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException(
+                        "Chromium não encontrado. Configure a variável de ambiente CHROMIUM_PATH no servidor.");
+
+                logger.LogInformation("CHROMIUM_PATH não definido — baixando Chromium (apenas em desenvolvimento)");
+                using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+                var download = new BrowserFetcher().DownloadAsync();
+                if (await Task.WhenAny(download, Task.Delay(Timeout.Infinite, cts.Token)) != download)
+                    throw new TimeoutException("Timeout ao baixar Chromium. Instale manualmente e configure CHROMIUM_PATH.");
+                await download;
+                launchOpts = new LaunchOptions { Headless = true, Args = sandboxArgs };
+            }
+
+            await using var browser = await Puppeteer.LaunchAsync(launchOpts);
+            await using var page = await browser.NewPageAsync();
+
+            await page.SetContentAsync(html, new NavigationOptions
+            {
+                WaitUntil = [WaitUntilNavigation.Networkidle2],
+                Timeout = 30_000
+            });
+
+            await page.PdfAsync(filePath, new PdfOptions
+            {
+                Format = PaperFormat.A4,
+                PrintBackground = true,
+                MarginOptions = new MarginOptions { Top = "0", Bottom = "0", Left = "0", Right = "0" }
+            });
+
+            logger.LogInformation("PDF gerado em {Path}", filePath);
+            return filePath;
         }
-        else
+        catch (Exception ex) when (ex is not InvalidOperationException and not TimeoutException)
         {
-            logger.LogInformation("CHROMIUM_PATH não definido — baixando Chromium para desenvolvimento");
-            await new BrowserFetcher().DownloadAsync();
-            launchOpts = new LaunchOptions { Headless = true, Args = sandboxArgs };
+            logger.LogError(ex, "Erro ao gerar PDF para submission {Id}", s.Id);
+            throw new InvalidOperationException($"Falha ao gerar PDF: {ex.Message}", ex);
         }
-
-        await using var browser = await Puppeteer.LaunchAsync(launchOpts);
-        await using var page = await browser.NewPageAsync();
-
-        await page.SetContentAsync(html, new NavigationOptions
-        {
-            WaitUntil = [WaitUntilNavigation.Networkidle2],
-            Timeout = 30_000
-        });
-
-        await page.PdfAsync(filePath, new PdfOptions
-        {
-            Format = PaperFormat.A4,
-            PrintBackground = true,
-            MarginOptions = new MarginOptions { Top = "0", Bottom = "0", Left = "0", Right = "0" }
-        });
-
-        logger.LogInformation("PDF gerado em {Path}", filePath);
-        return filePath;
     }
 
     // ── Template ──────────────────────────────────────────────────────────────
