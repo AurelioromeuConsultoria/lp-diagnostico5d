@@ -56,17 +56,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = "diagnostico5d",
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
         };
-        // Não rejeitar automaticamente requests com token inválido em rotas sem [Authorize]
-        options.Events = new JwtBearerEvents
-        {
-            OnChallenge = context =>
-            {
-                // Só retorna 401 se a rota exige autenticação
-                if (!context.Response.HasStarted)
-                    context.HandleResponse();
-                return Task.CompletedTask;
-            }
-        };
     });
 
 // ── Controllers ────────────────────────────────────────────────────────
@@ -152,16 +141,29 @@ app.MapOpenApi();
 
 app.UseCors("DefaultPolicy");
 
-app.UseAuthentication();
-
-// Serve static files (index.html, diagnostico.html) from wwwroot
+// Serve static files BEFORE authentication (correct ASP.NET Core order)
+// Cache-Control: no-cache for HTML, immutable for hashed assets
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        var headers = ctx.Context.Response.Headers;
+        var ext = Path.GetExtension(ctx.File.Name).ToLowerInvariant();
+        // HTML: never cache (so new deployments always fetch fresh asset URLs)
+        if (ext == ".html")
+            headers.CacheControl = "no-cache, no-store, must-revalidate";
+        // Hashed assets (JS/CSS): immutable forever (filename changes on content change)
+        else if (ext is ".js" or ".css" or ".woff" or ".woff2" or ".ttf" or ".ico" or ".png" or ".svg" or ".webp")
+            headers.CacheControl = "public, max-age=31536000, immutable";
+    }
+});
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// SPA fallback for admin React app at /admin (scoped to /admin/* only)
+// SPA fallback for admin React app — handles /admin and /admin/*
 app.MapFallbackToFile("/admin/{**path}", "admin/index.html");
 
 app.Run();

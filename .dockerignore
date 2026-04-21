@@ -1,0 +1,21 @@
+# Node
+apps/Admin/node_modules/
+apps/Admin/dist/
+
+# .NET build artifacts
+apps/API/**/bin/
+apps/API/**/obj/
+
+# Git / editor
+.git/
+.gitignore
+.github/
+
+# Local data
+*.db
+*.db-shm
+*.db-wal
+
+# Misc
+.DS_Store
+*.md
