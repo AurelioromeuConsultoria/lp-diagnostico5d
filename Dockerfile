@@ -1,5 +1,5 @@
 # ── Stage 1: Build React Admin ──────────────────────────────────────────
-FROM node:22-alpine AS admin-build
+FROM node:22-bookworm-slim AS admin-build
 WORKDIR /admin
 COPY apps/Admin/package*.json ./
 RUN npm ci
